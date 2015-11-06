@@ -12,5 +12,10 @@ setup(
     author_email='gbudak@iupui.edu',
     license='MIT',
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
-    zip_safe=False
+    zip_safe=False,
+    entry_points={
+        'console_scripts': [
+            'gsea_rbp = gsea_rbp.scripts:main',
+            ]
+        }
     )
