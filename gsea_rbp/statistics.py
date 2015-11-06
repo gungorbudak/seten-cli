@@ -1,4 +1,5 @@
 import random
+import operator
 import numpy
 import scipy
 
