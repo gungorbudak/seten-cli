@@ -20,31 +20,31 @@ def gene_level_score(scores, method='highest'):
     else:
         raise ValueError('could not find %s in available methods' % (method))
 
-def randomize(scores, original_scores, operator=operator.gt, cutoff=0.01):
+def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.01):
     """
     Random sample from data and compare the random set
-    with the original set and return the p-value if
+    with the overlap set and return the p-value if
     it meets the conditions
     """
-    random_scores = [scores[k] for k in random.sample(scores, len(original_scores))]
+    random_scores = random.sample(scores, len(overlap_scores))
     try:
-        z, p = scipy.stats.mannwhitneyu(original_scores, random_scores)
+        z, p = scipy.stats.mannwhitneyu(overlap_scores, random_scores)
         # two-tailed test fix
         p *= 2
-        # median of original set should be lower and cutoff achieved
-        if operator(numpy.median(original_scores), numpy.median(random_scores)) and p < cutoff:
+        # check medians and cutoff
+        if operator(numpy.median(overlap_scores), numpy.median(random_scores)) and p < cutoff:
             return p
     except ValueError:
         pass
     return None
 
-def gene_set_p_value(scores, original_scores, operator=operator.gt, cutoff=0.01, times=1000):
+def gene_set_p_value(scores, overlap_scores, operator=operator.gt, cutoff=0.01, times=1000):
     """
     Computes a p-value by random sampling from data
     and doing Mann-Whitney U test and median comparison
     """
     # serial execution
-    p_values = [randomize(scores, original_scores, operator=operator, cutoff=cutoff) for _ in xrange(times)]
+    p_values = [randomize(scores, overlap_scores, operator=operator, cutoff=cutoff) for _ in xrange(times)]
 
     # count the p values
     n = len([_ for _ in p_values if _ != None])

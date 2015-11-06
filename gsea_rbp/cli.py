@@ -17,7 +17,7 @@ def output(output, results):
     if results:
         with open(output, 'w') as f:
             for result in results:
-                f.write(result['name'] + '\t' + str(len(result['genes'])) + '\t' + str(result['p_value']) + '\n')
+                f.write(result['name'] + '\t' + str(len(result['genes'])) + '\t' + str(result['size']) + '\t' + str(result['p_value']) + '\n')
 
 def main():
     # parse terminal arguments
@@ -29,7 +29,7 @@ def main():
     parser.add_argument('-o', default='output', help='name prefix of output directories that will store results')
     parser.add_argument('-i', default=4, type=int, help='index of the value column in the BED file')
     parser.add_argument('-m', default='highest', help='method to compute a single value from multiple values for the same gene')
-    parser.add_argument('-r', default='gt', help='relate operator for comparing the median of original set and randomly sampled sets')
+    parser.add_argument('-r', default='gt', help='relate operator for comparing the median of overlap set and randomly sampled sets')
     args = parser.parse_args()
 
     # collect paths to data files here
