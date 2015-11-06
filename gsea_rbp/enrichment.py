@@ -1,3 +1,4 @@
+import os
 import operator
 from gsea_rbp.statistics import gene_level_score
 from gsea_rbp.statistics import gene_set_p_value
@@ -27,13 +28,13 @@ def collect_scores(path='', mapping=None, index=4, method='highest'):
 
     return scores
 
-def collect_gene_sets(path=''):
+def collect_gene_sets(path='', resources_dir='resources'):
     """
     Collects gene sets as a list
     """
     gene_sets = []
     try:
-        with open('inputs/%s.gmt' % (path), 'r') as rows:
+        with open(os.path.join(resources_dir, '%s.gmt' % (path)), 'r') as rows:
             for row in rows:
                 cols = row.strip().split('\t')
                 gene_sets.append(dict(name = cols[0],
@@ -41,15 +42,15 @@ def collect_gene_sets(path=''):
                                       size = len(set(cols[2:]))))
     except IOError:
         pass
-        
+
     return gene_sets
 
-def gene_set_enrichment(scores, gene_set_collection='', operator=operator.gt, cutoff=0.01, count=3):
+def gene_set_enrichment(scores, gene_set_collection='', resources_dir='resources', operator=operator.gt, cutoff=0.01, count=3):
     """
     Applies gene set enrichment on the data
     """
     genes = set(scores.keys())
-    gene_sets = collect_gene_sets(gene_set_collection)
+    gene_sets = collect_gene_sets(gene_set_collection, resources_dir)
     results = []
     for n, gene_set in enumerate(gene_sets):
         overlap = list(set.intersection(genes, gene_set['genes']))

@@ -4,7 +4,7 @@ import csv
 from intervaltree import IntervalTree
 
 
-def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='../resources'):
+def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
     Downloads mapping of chromosomal locations to HGNC symbols
     TODO: Handle chromosome names for different species
@@ -40,7 +40,7 @@ def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='.
 
     return mapping_path
 
-def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='../resources'):
+def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
     Generates an interval tree of mapping from downloaded file
     """

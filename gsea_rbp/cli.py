@@ -26,10 +26,11 @@ def main():
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
     parser.add_argument('data', help='can be a path to a BED file or a directory of BED files')
+    parser.add_argument('-r', default='resources', help='path to directory that stores/will store resources such as mapping')
     parser.add_argument('-o', default='output', help='name prefix of output directories that will store results')
     parser.add_argument('-i', default=4, type=int, help='index of the value column in the BED file')
     parser.add_argument('-m', default='highest', help='method to compute a single value from multiple values for the same gene')
-    parser.add_argument('-r', default='gt', help='relate operator for comparing the median of overlap set and randomly sampled sets')
+    parser.add_argument('-p', default='gt', help='relate operator for comparing the median of overlap set and randomly sampled sets')
     args = parser.parse_args()
 
     # collect paths to data files here
@@ -49,10 +50,10 @@ def main():
            'le': operator.le,
            'eq': operator.eq
           }
-    op = ops[args.r]
+    op = ops[args.p]
 
     # generate the mapping
-    mapping = generate('grch37', 'hsapiens_gene_ensembl', '../resources')
+    mapping = generate('grch37', 'hsapiens_gene_ensembl', 'resources')
 
     # run for each data file
     for data_path in data_paths:
@@ -74,7 +75,7 @@ def main():
         # collect results
         results = []
         for gene_set_collection in gene_set_collections:
-            results.extend(gene_set_enrichment(scores, gene_set_collection=gene_set_collection, operator=op))
+            results.extend(gene_set_enrichment(scores, gene_set_collection=gene_set_collection, resourses_dir=args.r, operator=op))
 
         # output results
         output = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.o, os.path.basename(data_path))
