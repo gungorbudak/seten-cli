@@ -27,8 +27,8 @@ def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='.
 
     request = requests.get(url, stream=True)
 
-    if not path.exists(directory):
-        mkdir(directory)
+    if not path.exists(resources_dir):
+        mkdir(resources_dir)
 
     mapping_path = path.join(resources_dir, '_'.join([version, dataset, 'mapping.tsv']))
     with open(mapping_path, 'w') as f:
