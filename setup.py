@@ -15,7 +15,7 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'gsea_rbp = gsea_rbp.scripts:main',
+            'gsea_rbp = gsea_rbp.scripts.gsea_rbp:main',
             ]
         }
     )
