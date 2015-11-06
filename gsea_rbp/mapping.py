@@ -61,7 +61,7 @@ def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='.
 
     return mapping
 
-def search(mapping=None, chromosome_name, start_position, end_position):
+def search(chromosome_name, start_position, end_position, mapping=None):
     """
     Searches for chromosomal locations on the interval tree
     """

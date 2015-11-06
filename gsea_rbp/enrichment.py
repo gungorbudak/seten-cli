@@ -14,7 +14,7 @@ def collect_scores(path='', mapping=None, index=4, method='highest'):
             cols = row.strip().split()
             # value available?
             if cols[index]:
-                genes = search(mapping, cols[0], cols[1], cols[2])
+                genes = search(cols[0], cols[1], cols[2], mapping)
                 # any genes available?
                 if genes:
                     # collect values for each gene
@@ -60,5 +60,5 @@ def gene_set_enrichment(scores, gene_set_collection='', operator=operator.gt, cu
                         )
             if _gene_set['p_value'] < cutoff:
                 results.append(_gene_set)
-                
+
     return results
