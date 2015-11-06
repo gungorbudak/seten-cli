@@ -38,7 +38,7 @@ def collect_gene_sets(path='', resources_dir='resources'):
             for row in rows:
                 cols = row.strip().split('\t')
                 gene_sets.append(dict(name = cols[0],
-                                      genes = set(cols[2:])
+                                      genes = set(cols[2:]),
                                       size = len(set(cols[2:]))))
     except IOError:
         pass
