@@ -7,14 +7,16 @@ def gene_level_score(scores, method='highest'):
     """
     Computes a gene level score from list of
     binding scores belonging to the same gene
-    Methods: lowest, highest, mean
+    Methods: lowest, highest, mean, median
     """
     if method == 'lowest':
         return min(scores)
     elif method == 'highest':
         return max(scores)
     elif method == 'mean':
-        return float(sum(scores)) / max(len(scores), 1)
+        return numpy.mean(scores)
+    elif method == 'median':
+        return numpy.median(scores)
     else:
         raise ValueError('could not find %s in available methods' % (method))
 
@@ -43,6 +45,8 @@ def gene_set_p_value(scores, original_scores, operator=operator.gt, cutoff=0.01,
     """
     # serial execution
     p_values = [randomize(scores, original_scores, operator=operator, cutoff=cutoff) for _ in xrange(times)]
+
     # count the p values
     n = len([_ for _ in p_values if _ != None])
+
     return max(1 - (n / float(times)), 1 / float(times))
