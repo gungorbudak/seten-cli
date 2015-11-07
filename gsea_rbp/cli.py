@@ -1,9 +1,9 @@
 import os
 import operator
 import argparse
+from time import time
 from gsea_rbp.mapping import generate
-from gsea_rbp.enrichment import collect_scores
-from gsea_rbp.enrichment import gene_set_enrichment
+from gsea_rbp.enrichment import *
 
 
 def output_results(output, results):
@@ -18,20 +18,24 @@ def output_results(output, results):
     if results:
         with open(output, 'w') as f:
             for result in results:
-                f.write(result['name'] + '\t' + str(len(result['genes'])) + '\t' + str(result['size']) + '\t' + str(result['p_value']) + '\n')
+                if result:
+                    f.write(result['name'] + '\t' + str(len(result['genes'])) + '\t' + str(result['size']) + '\t' + str(result['p_value']) + '\n')
 
 def main():
+    # timer starts
+    start_time = time()
+
     # parse terminal arguments
     parser = argparse.ArgumentParser(
                 description='Inferring associations between RNA-binding proteins (RBPs) and gene sets based on binding signals.',
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
     parser.add_argument('data', help='can be a path to a BED file or a directory of BED files')
-    parser.add_argument('-r', default='resources', help='path to directory that stores/will store resources such as mapping')
-    parser.add_argument('-o', default='output', help='path output directory that will store results')
+    parser.add_argument('-r', default='resources', help='path to the directory that stores/will store resources such as mapping')
+    parser.add_argument('-o', default='output', help='path to the output directory that will store results')
     parser.add_argument('-i', default=4, type=int, help='index of the score column in a BED file')
     parser.add_argument('-m', default='highest', help='method to compute a gene level score from multiple binding scores for the same gene')
-    parser.add_argument('-p', default='gt', help='relate operator for comparing the median of overlap set and randomly sampled sets')
+    parser.add_argument('-p', default='gt', help='relate operator for comparing the median of overlap set and every randomly sampled sets')
     args = parser.parse_args()
 
     # collect paths to data files here
@@ -44,17 +48,12 @@ def main():
         data_paths.append(args.data)
 
     # relate operators
-    ops = {
-           'gt': operator.gt,
-           'lt': operator.lt,
-           'ge': operator.ge,
-           'le': operator.le,
-           'eq': operator.eq
-          }
+    ops = {'gt': operator.gt,
+           'lt': operator.lt}
     op = ops[args.p]
 
     # generate the mapping
-    mapping = generate('grch37', 'hsapiens_gene_ensembl', 'resources')
+    mapping = generate('grch37', 'hsapiens_gene_ensembl', args.r)
 
     # run for each data file
     for data_path in data_paths:
@@ -73,14 +72,22 @@ def main():
             'malacard'
         ]
 
+        # collect gene sets
+        gene_sets = []
+        for gene_set_collection in gene_set_collections:
+            gene_sets.extend(collect_gene_sets(gene_set_collection, args.r))
+
         # collect results
         results = []
-        for gene_set_collection in gene_set_collections:
-            results.extend(gene_set_enrichment(scores, gene_set_collection=gene_set_collection, resources_dir=args.r, operator=op))
+        for gene_set in gene_sets:
+            results.append(gene_set_enrichment(scores, gene_set=gene_set, operator=op))
 
         # output results
         output = os.path.join(args.o, os.path.basename(data_path))
         output_results(output, results)
+
+    # timer ends
+    print 'Took', round(time() - start_time, 2), 'seconds'
 
 if __name__ == '__main__':
     main()

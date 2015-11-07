@@ -13,7 +13,7 @@ def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
         '''http://%s.ensembl.org/biomart/martservice?query=''' \
         '''<?xml version="1.0" encoding="UTF-8" ?>''' \
         '''<!DOCTYPE Query>''' \
-        '''<Query virtualSchemaName="default" formatter="TSV" header="0" uniqueRows="0" count="" datasetConfigVersion="0.6">''' \
+        '''<Query virtualSchemaName="default" formatter="CSV" header="0" uniqueRows="0" count="" datasetConfigVersion="0.6">''' \
         '''<Dataset name="%s" interface="default">''' \
         '''<Filter name="chromosome_name" value="1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y,MT"/>''' \
         '''<Filter name="with_hgnc" excluded="0"/>''' \
@@ -35,7 +35,7 @@ def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
         f.write(','.join(['chromosome_name', 'start_position', 'end_position', 'hgnc_symbol']))
         f.write('\n')
         for line in request.iter_lines():
-            f.write(','.join(line.split('\t')))
+            f.write(line.strip())
             f.write('\n')
 
     return mapping_path
@@ -44,13 +44,12 @@ def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
     """
     Generates an interval tree of mapping from downloaded file
     """
-    mapping_path = path.join(resources_dir, '_'.join([version, dataset, 'mapping.tsv']))
+    mapping_path = path.join(resources_dir, '_'.join([version, dataset, 'mapping.csv']))
 
     if not path.exists(mapping_path):
         mapping_path = download(version, dataset, resources_dir)
 
     mapping = {}
-
     with open(mapping_path, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
