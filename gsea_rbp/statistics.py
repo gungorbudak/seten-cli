@@ -1,7 +1,7 @@
 import random
 import operator
 import numpy
-import scipy
+from scipy import stats
 
 
 def gene_level_score(scores, method='highest'):
@@ -29,7 +29,7 @@ def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.01):
     """
     random_scores = random.sample(scores, len(overlap_scores))
     try:
-        z, p = scipy.stats.mannwhitneyu(overlap_scores, random_scores)
+        z, p = stats.mannwhitneyu(overlap_scores, random_scores)
         # two-tailed test fix
         p *= 2
         # check medians and cutoff

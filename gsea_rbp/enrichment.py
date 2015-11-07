@@ -1,5 +1,6 @@
 import os
 import operator
+from collections import defaultdict
 from gsea_rbp.statistics import gene_level_score
 from gsea_rbp.statistics import gene_set_p_value
 from gsea_rbp.mapping import search

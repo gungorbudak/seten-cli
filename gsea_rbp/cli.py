@@ -1,11 +1,12 @@
 import os
+import operator
 import argparse
 from gsea_rbp.mapping import generate
 from gsea_rbp.enrichment import collect_scores
 from gsea_rbp.enrichment import gene_set_enrichment
 
 
-def output(output, results):
+def output_results(output, results):
     """
     Outputs gene set enrichment results with their gene counts and p-values
     """
@@ -27,9 +28,9 @@ def main():
             )
     parser.add_argument('data', help='can be a path to a BED file or a directory of BED files')
     parser.add_argument('-r', default='resources', help='path to directory that stores/will store resources such as mapping')
-    parser.add_argument('-o', default='output', help='name prefix of output directories that will store results')
-    parser.add_argument('-i', default=4, type=int, help='index of the value column in the BED file')
-    parser.add_argument('-m', default='highest', help='method to compute a single value from multiple values for the same gene')
+    parser.add_argument('-o', default='output', help='path output directory that will store results')
+    parser.add_argument('-i', default=4, type=int, help='index of the score column in a BED file')
+    parser.add_argument('-m', default='highest', help='method to compute a gene level score from multiple binding scores for the same gene')
     parser.add_argument('-p', default='gt', help='relate operator for comparing the median of overlap set and randomly sampled sets')
     args = parser.parse_args()
 
@@ -75,10 +76,10 @@ def main():
         # collect results
         results = []
         for gene_set_collection in gene_set_collections:
-            results.extend(gene_set_enrichment(scores, gene_set_collection=gene_set_collection, resourses_dir=args.r, operator=op))
+            results.extend(gene_set_enrichment(scores, gene_set_collection=gene_set_collection, resources_dir=args.r, operator=op))
 
         # output results
-        output = os.path.join(os.path.dirname(os.path.abspath(__file__)), args.o, os.path.basename(data_path))
+        output = os.path.join(args.o, os.path.basename(data_path))
         output_results(output, results)
 
 if __name__ == '__main__':

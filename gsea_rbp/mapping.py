@@ -7,8 +7,8 @@ from intervaltree import IntervalTree
 def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
     Downloads mapping of chromosomal locations to HGNC symbols
-    TODO: Handle chromosome names for different species
     """
+    # TODO Handle chromosome names for different species
     url_template = \
         '''http://%s.ensembl.org/biomart/martservice?query=''' \
         '''<?xml version="1.0" encoding="UTF-8" ?>''' \
@@ -30,12 +30,12 @@ def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
     if not path.exists(resources_dir):
         mkdir(resources_dir)
 
-    mapping_path = path.join(resources_dir, '_'.join([version, dataset, 'mapping.tsv']))
+    mapping_path = path.join(resources_dir, '_'.join([version, dataset, 'mapping.csv']))
     with open(mapping_path, 'w') as f:
-        f.write('\t'.join(['chromosome_name', 'start_position', 'end_position', 'hgnc_symbol']))
+        f.write(','.join(['chromosome_name', 'start_position', 'end_position', 'hgnc_symbol']))
         f.write('\n')
         for line in request.iter_lines():
-            f.write(line)
+            f.write(','.join(line.split('\t')))
             f.write('\n')
 
     return mapping_path
@@ -65,6 +65,8 @@ def search(chromosome_name, start_position, end_position, mapping=None):
     """
     Searches for chromosomal locations on the interval tree
     """
+    # TODO Handle chromosome names better to cover more options
+    chromosome_name = chromosome_name.replace('chr', '') if chromosome_name.startswith('chr') else chromosome_name
     # fixes the name incorrectly given as M instead of MT
-    chromosome_name = 'MT' if chromosome_name is 'M' else chromosome_name
+    chromosome_name = 'MT' if chromosome_name == 'M' else chromosome_name
     return [gene.data for gene in mapping[chromosome_name].search(int(start_position), int(end_position))]
