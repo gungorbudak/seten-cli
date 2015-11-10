@@ -5,8 +5,8 @@ REQUIRES = [
     'argparse>=1.2.1',
     'requests>=2.8.1',
     'intervaltree>=2.1.0',
-    'numpy>=1.10.1',
-    'scipy>=0.16.1'
+    'numpy>=1.9.2',
+    'scipy>=0.7.2'
     ]
 
 EXCLUDE_FROM_PACKAGES = []

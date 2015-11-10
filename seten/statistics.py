@@ -2,6 +2,7 @@ import random
 import operator
 import numpy
 from scipy import stats
+from seten.multi_comp import fdr_correction, bonferroni_correction
 
 
 def gene_level_score(scores, method='highest'):
@@ -62,9 +63,14 @@ def functional_p_value(gs_size, ov_size, gc_size, dt_size):
     odds_ratio, p_value = stats.fisher_exact([[gs_size, ov_size], [gc_size, dt_size]])
     return p_value
 
-def p_values_correction(p_values, method='fdr'):
+def p_values_correction(p_values, alpha=0.05, method='bh'):
     """
     Correct for multiple p-values
     """
-    # TODO implement the actual correction
-    return p_values
+    if method == 'bh':
+        return fdr_correction(p_values, alpha=alpha, method='indep')
+    elif method == 'by':
+        return fdr_correction(p_values, alpha=alpha, method='negcorr')
+    elif method == 'bon':
+        return bonferroni_correction(p_values, alpha=alpha)
+    raise ValueError('could not find %s in available methods' % (method))

@@ -3,6 +3,7 @@ import operator
 from collections import defaultdict
 from seten.statistics import gene_level_score
 from seten.statistics import gene_set_p_value
+from seten.statistics import functional_p_value
 from seten.mapping import search
 
 

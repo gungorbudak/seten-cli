@@ -10,7 +10,7 @@ def _path(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='reso
     """
     return path.join(resources_dir, '_'.join([version, dataset, 'mapping.csv']))
 
-def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
+def _download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
     Downloads mapping of chromosomal locations to HGNC symbols
     """
@@ -51,7 +51,7 @@ def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
     """
     mapping_path = _path(version, dataset, resources_dir)
     if not path.exists(mapping_path):
-        mapping_path = download(version, dataset, resources_dir)
+        mapping_path = _download(version, dataset, resources_dir)
     # Collect chromosomes in a dictionary as an interval tree
     mapping = {}
     with open(mapping_path, 'r') as f:
@@ -68,7 +68,7 @@ def search(chromosome_name, start_position, end_position, mapping=None):
     Searches for chromosomal locations on the interval tree
     """
     # TODO Handle chromosome names better to cover more options
-    chromosome_name = chromosome_name.replace('chr', '') if chromosome_name.startswith('chr') else chromosome_name
+    chromosome_name = str(chromosome_name).replace('chr', '') if str(chromosome_name).startswith('chr') else str(chromosome_name)
     # fixes the name incorrectly given as M instead of MT
     chromosome_name = 'MT' if chromosome_name == 'M' else chromosome_name
     return [gene.data for gene in mapping[chromosome_name].search(int(start_position), int(end_position))]
