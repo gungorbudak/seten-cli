@@ -1,4 +1,5 @@
 import os
+import csv
 import operator
 import argparse
 from time import time
@@ -18,9 +19,10 @@ def output_results(output, results):
     # any result available
     if results:
         with open(output, 'w') as f:
+            writer = csv.DictWriter(f)
             for result in results:
                 if result:
-                    f.write(result['name'] + '\t' + str(len(result['genes'])) + '\t' + str(result['size']) + '\t' + str(result['gse_p_value']) + '\t' + str(result['fe_p_value']) + '\n')
+                    writer.writerow(result)
 
 def main():
     # timer starts
@@ -84,7 +86,7 @@ def main():
         results = []
         for gc_sets, gc_size in gene_sets:
             for gene_set in gc_sets:
-                results.append(integrated_enrichment(scores, gene_set=gene_set, gs_size=gs_size, operator=op))
+                results.append(integrated_enrichment(scores, gene_set=gene_set, gc_size=gc_size, operator=op))
 
         # output results
         output = os.path.join(args.o, os.path.basename(data_path))
