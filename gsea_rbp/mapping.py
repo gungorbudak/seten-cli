@@ -4,6 +4,12 @@ import csv
 from intervaltree import IntervalTree
 
 
+def path(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
+    """
+    Construct path to mapping
+    """
+    return path.join(resources_dir, '_'.join([version, dataset, 'mapping.csv']))
+
 def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
     Downloads mapping of chromosomal locations to HGNC symbols
@@ -30,25 +36,23 @@ def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
     if not path.exists(resources_dir):
         mkdir(resources_dir)
 
-    mapping_path = path.join(resources_dir, '_'.join([version, dataset, 'mapping.csv']))
+    mapping_path = path(version, dataset, resources_dir)
     with open(mapping_path, 'w') as f:
         f.write(','.join(['chromosome_name', 'start_position', 'end_position', 'hgnc_symbol']))
         f.write('\n')
         for line in request.iter_lines():
             f.write(line.strip())
             f.write('\n')
-
     return mapping_path
 
 def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
     Generates an interval tree of mapping from downloaded file
     """
-    mapping_path = path.join(resources_dir, '_'.join([version, dataset, 'mapping.csv']))
-
+    mapping_path = path(version, dataset, resources_dir)
     if not path.exists(mapping_path):
         mapping_path = download(version, dataset, resources_dir)
-
+    # Collect chromosomes in a dictionary as an interval tree
     mapping = {}
     with open(mapping_path, 'r') as f:
         reader = csv.DictReader(f)
@@ -57,7 +61,6 @@ def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
             if not mapping.has_key(row['chromosome_name']):
                 mapping[row['chromosome_name']] = IntervalTree()
             mapping[row['chromosome_name']].addi(int(row['start_position']), int(row['end_position']), row['hgnc_symbol'])
-
     return mapping
 
 def search(chromosome_name, start_position, end_position, mapping=None):
