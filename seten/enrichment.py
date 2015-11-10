@@ -34,21 +34,18 @@ def collect_gene_sets(path='', resources_dir='resources'):
     """
     Collects gene sets as a list
     """
-    gc_size = 0
     gene_sets = []
     try:
         with open(os.path.join(resources_dir, '%s.gmt' % (path)), 'r') as rows:
             for row in rows:
                 cols = row.strip().split('\t')
-                gs_size = len(set(cols[2:]))
-                gc_size += gs_size
                 gene_sets.append(dict(name = cols[0],
-                                      genes = set(cols[2:]),
-                                      size = gs_size))
+                                      genes = list(set(cols[2:])),
+                                      size = len(set(cols[2:]))))
     except IOError:
         pass
 
-    return (gene_sets, gc_size)
+    return gene_sets
 
 def overlapping_genes(genes, gs_genes):
     """
@@ -60,9 +57,9 @@ def gene_set_enrichment(scores, gene_set, operator=operator.gt, cutoff=0.01, cou
     """
     Applies gene set enrichment on the data
     """
-    overlap = overlapping_genes(scores.keys(), gene_set['genes']))
+    overlap = overlapping_genes(scores.keys(), gene_set['genes'])
     if len(overlap) >= count:
-        overlap_scores = [scores[str(g)]) for g in overlap]
+        overlap_scores = [scores[str(g)] for g in overlap]
         p_value = gene_set_p_value(scores.values(), overlap_scores, operator)
         # there is no cutoff anymore
         return dict(name = gene_set['name'],
@@ -75,7 +72,7 @@ def functional_enrichment(genes, gene_set, gc_size, cutoff=0.01, count=3):
     """
     Applies functional enrichment on the data
     """
-    overlap = overlapping_genes(genes, gene_set['genes']))
+    overlap = overlapping_genes(genes, gene_set['genes'])
     if len(overlap) >= count:
         p_value = functional_p_value(len(gene_set['genes']), len(overlap), gc_size, len(genes))
         return dict(name = gene_set['name'],
@@ -84,13 +81,13 @@ def functional_enrichment(genes, gene_set, gc_size, cutoff=0.01, count=3):
                     p_value = p_value)
     return None
 
-def enrichment(scores, gene_set, gc_size, operator=operator.gt, cutoff=0.01, count=3):
+def integrated_enrichment(scores, gene_set, gc_size, operator=operator.gt, cutoff=0.01, count=3):
     """
     Applies integrated enrichment on the data
     """
-    overlap = overlapping_genes(scores.keys(), gene_set['genes']))
+    overlap = overlapping_genes(scores.keys(), gene_set['genes'])
     if len(overlap) >= count:
-        overlap_scores = [scores[str(g)]) for g in overlap]
+        overlap_scores = [scores[str(g)] for g in overlap]
         gse_p_value = gene_set_p_value(scores.values(), overlap_scores, operator)
         fe_p_value = functional_p_value(len(gene_set['genes']), len(overlap), gc_size, len(scores.keys()))
         return dict(name = gene_set['name'],

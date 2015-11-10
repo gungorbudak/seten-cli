@@ -2,6 +2,7 @@ import os
 import operator
 import argparse
 from time import time
+from itertools import chain
 from seten.mapping import generate
 from seten.enrichment import *
 
@@ -62,25 +63,28 @@ def main():
 
         # define gene set collections matching the name of the file in resources
         gene_set_collections = [
-            'c2.cp.biocarta.v5.0.symbols',
+            # 'c2.cp.biocarta.v5.0.symbols',
             'c2.cp.kegg.v5.0.symbols',
-            'c2.cp.reactome.v5.0.symbols',
-            'c5.bp.v5.0.symbols',
-            'c5.cc.v5.0.symbols',
-            'c5.mf.v5.0.symbols',
-            'cx.hpo.v5.0.symbols',
-            'cx.malacard.v5.0.symbols'
+            # 'c2.cp.reactome.v5.0.symbols',
+            # 'c5.bp.v5.0.symbols',
+            # 'c5.cc.v5.0.symbols',
+            # 'c5.mf.v5.0.symbols',
+            # 'cx.hpo.v5.0.symbols',
+            # 'cx.malacard.v5.0.symbols'
         ]
 
         # collect gene sets, gene collection sizes tuples
         gene_sets = []
         for gene_set_collection in gene_set_collections:
-            gene_sets.extend(collect_gene_sets(gene_set_collection, args.r))
+            gc_sets = collect_gene_sets(gene_set_collection, args.r)
+            gc_size = len(set(chain.from_iterable([gc_set['genes'] for gc_set in gc_sets])))
+            gene_sets.append((gc_sets, gc_size))
 
         # collect results
         results = []
-        for gene_set, gc_size in gene_sets:
-            results.append(enrichment(scores, gene_set=gene_set, gs_size=gs_size, operator=op))
+        for gc_sets, gc_size in gene_sets:
+            for gene_set in gc_sets:
+                results.append(integrated_enrichment(scores, gene_set=gene_set, gs_size=gs_size, operator=op))
 
         # output results
         output = os.path.join(args.o, os.path.basename(data_path))
