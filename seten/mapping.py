@@ -4,7 +4,7 @@ import csv
 from intervaltree import IntervalTree
 
 
-def path(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
+def _path(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
     Construct path to mapping
     """
@@ -36,7 +36,7 @@ def download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
     if not path.exists(resources_dir):
         mkdir(resources_dir)
 
-    mapping_path = path(version, dataset, resources_dir)
+    mapping_path = _path(version, dataset, resources_dir)
     with open(mapping_path, 'w') as f:
         f.write(','.join(['chromosome_name', 'start_position', 'end_position', 'hgnc_symbol']))
         f.write('\n')
@@ -49,7 +49,7 @@ def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
     """
     Generates an interval tree of mapping from downloaded file
     """
-    mapping_path = path(version, dataset, resources_dir)
+    mapping_path = _path(version, dataset, resources_dir)
     if not path.exists(mapping_path):
         mapping_path = download(version, dataset, resources_dir)
     # Collect chromosomes in a dictionary as an interval tree

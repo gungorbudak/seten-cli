@@ -2,8 +2,8 @@ import os
 import operator
 import argparse
 from time import time
-from gsea_rbp.mapping import generate
-from gsea_rbp.enrichment import *
+from seten.mapping import generate
+from seten.enrichment import *
 
 
 def output_results(output, results):
@@ -19,7 +19,7 @@ def output_results(output, results):
         with open(output, 'w') as f:
             for result in results:
                 if result:
-                    f.write(result['name'] + '\t' + str(len(result['genes'])) + '\t' + str(result['size']) + '\t' + str(result['p_value']) + '\n')
+                    f.write(result['name'] + '\t' + str(len(result['genes'])) + '\t' + str(result['size']) + '\t' + str(result['gse_p_value']) + '\t' + str(result['fe_p_value']) + '\n')
 
 def main():
     # timer starts
@@ -68,19 +68,19 @@ def main():
             'c5.bp.v5.0.symbols',
             'c5.cc.v5.0.symbols',
             'c5.mf.v5.0.symbols',
-            'hpo',
-            'malacard'
+            'cx.hpo.v5.0.symbols',
+            'cx.malacard.v5.0.symbols'
         ]
 
-        # collect gene sets
+        # collect gene sets, gene collection sizes tuples
         gene_sets = []
         for gene_set_collection in gene_set_collections:
             gene_sets.extend(collect_gene_sets(gene_set_collection, args.r))
 
         # collect results
         results = []
-        for gene_set in gene_sets:
-            results.append(gene_set_enrichment(scores, gene_set=gene_set, operator=op))
+        for gene_set, gc_size in gene_sets:
+            results.append(enrichment(scores, gene_set=gene_set, gs_size=gs_size, operator=op))
 
         # output results
         output = os.path.join(args.o, os.path.basename(data_path))
