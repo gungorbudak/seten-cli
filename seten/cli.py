@@ -19,7 +19,9 @@ def output_results(output, results):
     # any result available
     if results:
         with open(output, 'w') as f:
-            writer = csv.DictWriter(f)
+            header = results[0].keys()
+            writer = csv.DictWriter(f, fieldnames=header)
+            writer.writeheader()
             for result in results:
                 if result:
                     writer.writerow(result)
@@ -30,7 +32,7 @@ def main():
 
     # parse terminal arguments
     parser = argparse.ArgumentParser(
-                description='Inferring associations between RNA-binding proteins (RBPs) and gene sets based on binding signals.',
+                description='Gene set enrichment on CHIP-seq RBA-binding protein binding signals datasets',
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
     parser.add_argument('data', help='can be a path to a BED file or a directory of BED files')

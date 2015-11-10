@@ -63,7 +63,7 @@ def gene_set_enrichment(scores, gene_set, operator=operator.gt, cutoff=0.01, cou
         p_value = gene_set_p_value(scores.values(), overlap_scores, operator)
         # there is no cutoff anymore
         return dict(name = gene_set['name'],
-                    genes = overlap,
+                    genes = len(overlap),
                     size = gene_set['size'],
                     p_value = p_value)
     return None
@@ -76,7 +76,7 @@ def functional_enrichment(genes, gene_set, gc_size, cutoff=0.01, count=3):
     if len(overlap) >= count:
         p_value = functional_p_value(len(gene_set['genes']), len(overlap), gc_size, len(genes))
         return dict(name = gene_set['name'],
-                    genes = overlap,
+                    genes = len(overlap),
                     size = gene_set['size'],
                     p_value = p_value)
     return None
@@ -91,7 +91,7 @@ def integrated_enrichment(scores, gene_set, gc_size, operator=operator.gt, cutof
         gse_p_value = gene_set_p_value(scores.values(), overlap_scores, operator)
         fe_p_value = functional_p_value(len(gene_set['genes']), len(overlap), gc_size, len(scores.keys()))
         return dict(name = gene_set['name'],
-                    genes = overlap,
+                    genes = len(overlap),
                     size = gene_set['size'],
                     gse_p_value = gse_p_value,
                     fe_p_value = fe_p_value)

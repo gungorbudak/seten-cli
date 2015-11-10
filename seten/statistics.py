@@ -22,7 +22,7 @@ def gene_level_score(scores, method='highest'):
     else:
         raise ValueError('could not find %s in available methods' % (method))
 
-def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.01):
+def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.05):
     """
     Random sample from data and compare the random set
     with the overlap set and return the p-value if
@@ -40,7 +40,7 @@ def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.01):
         pass
     return None
 
-def gene_set_p_value(scores, overlap_scores, operator=operator.gt, cutoff=0.01, times=1000):
+def gene_set_p_value(scores, overlap_scores, operator=operator.gt, cutoff=0.05, times=1000):
     """
     Computes a p-value by random sampling from data
     and doing Mann-Whitney U test and median comparison
