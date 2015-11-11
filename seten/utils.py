@@ -1,11 +1,11 @@
 from os import path, mkdir
 
 
-def filename(path):
+def filename(filepath):
     """
-    Obtain filename from the path
+    Obtain filename from the filepath
     """
-    return path.splitext(path.basename(path))[0]
+    return path.splitext(path.basename(filepath))[0]
 
 def output_results(output, results):
     """
