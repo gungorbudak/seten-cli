@@ -54,11 +54,6 @@ def gene_set_p_value(scores, overlap_scores, operator=operator.gt, cutoff=0.05, 
 def functional_p_value(gs_size, ov_size, gc_size, dt_size):
     """
     Does a Fisher's exact test
-
-    :param gs_size: Gene set size
-    :param ov_size: Overlap size
-    :param gc_size: Gene collection size
-    :param dt_size: Data size
     """
     odds_ratio, p_value = stats.fisher_exact([[gs_size, ov_size], [gc_size, dt_size]])
     return p_value

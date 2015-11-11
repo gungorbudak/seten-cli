@@ -12,7 +12,8 @@ def _ecdf(x):
 
 
 def fdr_correction(pvals, alpha=0.05, method='indep'):
-    """P-value correction with False Discovery Rate (FDR)
+    """
+    P-value correction with False Discovery Rate (FDR)
     Correction for multiple comparison using FDR.
     This covers Benjamini/Hochberg for independent or positively correlated and
     Benjamini/Yekutieli for general or negatively correlated tests.
@@ -69,7 +70,8 @@ def fdr_correction(pvals, alpha=0.05, method='indep'):
     return reject, pvals_corrected
 
 def bonferroni_correction(pval, alpha=0.05):
-    """P-value correction with Bonferroni method
+    """
+    P-value correction with Bonferroni method
     Parameters
     ----------
     pval : array_like
