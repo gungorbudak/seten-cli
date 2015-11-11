@@ -1,6 +1,6 @@
 # Seten
 
-Gene set enrichment on CHIP-seq RBA-binding protein binding signals datasets
+Gene set enrichment on CLIP-seq RBA-binding protein binding signals datasets
 
 ## Installation
 
