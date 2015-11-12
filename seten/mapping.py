@@ -67,8 +67,12 @@ def search(chromosome_name, start_position, end_position, mapping=None):
     """
     Searches for chromosomal locations on the interval tree
     """
-    # TODO Handle chromosome names better to cover more options
+    # TODO handle chromosome names better to cover more options
     chromosome_name = str(chromosome_name).replace('chr', '') if str(chromosome_name).startswith('chr') else str(chromosome_name)
     # fixes the name incorrectly given as M instead of MT
     chromosome_name = 'MT' if chromosome_name == 'M' else chromosome_name
-    return [gene.data for gene in mapping[chromosome_name].search(int(start_position), int(end_position))]
+    # TODO better handle this exception
+    try:
+        return [gene.data for gene in mapping[chromosome_name].search(int(start_position), int(end_position))]
+    except:
+        return []
