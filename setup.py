@@ -14,7 +14,7 @@ EXCLUDE_FROM_PACKAGES = []
 setup(
     name='seten',
     version='0.0.1',
-    description='Gene set enrichment on CHIP-seq RBA-binding protein binding signals datasets',
+    description='Gene set enrichment on CHIP-seq RNA-binding protein binding signals datasets',
     url='https://bitbucket.org/gungorbudak/seten',
     author='Gungor Budak',
     author_email='gbudak@iupui.edu',

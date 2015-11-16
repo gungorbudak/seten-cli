@@ -1,6 +1,6 @@
 # Seten
 
-Gene set enrichment on CLIP-seq RBA-binding protein binding signals datasets
+Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets
 
 ## Installation
 
@@ -19,7 +19,7 @@ Gene set enrichment on CLIP-seq RBA-binding protein binding signals datasets
     seten -h
     usage: seten [-h] [-r R] [-o O] [-i I] [-m M] [-p P] data collection
 
-    Gene set enrichment on CLIP-seq RBA-binding protein binding signals datasets
+    Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets
 
     positional arguments:
       data        can be a path to a BED file or a directory of BED files

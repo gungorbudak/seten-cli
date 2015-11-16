@@ -13,14 +13,14 @@ def main():
 
     # parse terminal arguments
     parser = argparse.ArgumentParser(
-                description='Gene set enrichment on CLIP-seq RBA-binding protein binding signals datasets',
+                description='Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets',
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter
             )
     parser.add_argument('data', help='can be a path to a BED file or a directory of BED files')
     parser.add_argument('collection', help='is a path to a gene set collection GMT file containing gene sets and associated genes')
     parser.add_argument('-r', default='resources', help='is a path to the directory that can store resources such as mapping and gene set collections')
     parser.add_argument('-o', default='output', help='is a path to the output directory that will store results')
-    parser.add_argument('-i', default=4, type=int, help='is the index of the score column in a BED file')
+    parser.add_argument('-i', default=4, type=int, help='is the zero-based index of the score column in a BED file')
     parser.add_argument('-m', default='highest', help='is the method to compute a gene level score from multiple binding scores for the same gene')
     parser.add_argument('-p', default='gt', help='relates the operator for comparing the median of overlap set and every randomly sampled sets')
     args = parser.parse_args()
