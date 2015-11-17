@@ -1,3 +1,8 @@
+"""
+This file is part of Seten which is released under the MIT License (MIT).
+See file LICENSE or go to https://github.com/gungorbudak/seten/blob/master/LICENSE
+for full license details.
+"""
 import operator
 from itertools import chain
 from collections import defaultdict

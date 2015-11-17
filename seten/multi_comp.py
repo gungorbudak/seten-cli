@@ -1,6 +1,7 @@
-# This module has been adapted from mne-python package
-# https://github.com/mne-tools/mne-python
-
+"""
+This file has been adapted from mne-python package
+https://github.com/mne-tools/mne-python
+"""
 import numpy
 
 def _ecdf(x):
