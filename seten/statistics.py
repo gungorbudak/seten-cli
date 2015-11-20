@@ -35,12 +35,12 @@ def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.05):
     """
     random_scores = random.sample(scores, len(overlap_scores))
     try:
-        z, p = stats.mannwhitneyu(overlap_scores, random_scores)
-        # two-tailed test fix
-        p *= 2
-        # check medians and cutoff
-        if operator(numpy.median(overlap_scores), numpy.median(random_scores)) and p < cutoff:
-            return p
+        if operator(numpy.median(overlap_scores), numpy.median(random_scores)):
+            z, p = stats.mannwhitneyu(overlap_scores, random_scores)
+            # two-tailed test fix
+            p *= 2
+            if p < cutoff:
+                return p
     except ValueError:
         pass
     return None
@@ -53,7 +53,7 @@ def gene_set_p_value(scores, overlap_scores, operator=operator.gt, cutoff=0.05, 
     # serial execution
     p_values = [randomize(scores, overlap_scores, operator=operator, cutoff=cutoff) for _ in xrange(times)]
     # count the p values
-    n = len([_ for _ in p_values if _ != None])
+    n = times - p_values.count(None)
     return max(1 - (n / float(times)), 1 / float(times))
 
 def functional_p_value(gs_size, ov_size, gc_size, dt_size):
