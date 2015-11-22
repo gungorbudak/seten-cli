@@ -4,6 +4,7 @@ https://github.com/mne-tools/mne-python
 """
 import numpy
 
+
 def _ecdf(x):
     """
     No frills empirical cdf used in fdr correction
@@ -69,6 +70,7 @@ def fdr_correction(pvals, alpha=0.05, method='indep'):
     pvals_corrected = pvals_corrected[sortrevind].reshape(shape_init)
     reject = reject[sortrevind].reshape(shape_init)
     return reject, pvals_corrected
+
 
 def bonferroni_correction(pval, alpha=0.05):
     """

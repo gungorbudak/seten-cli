@@ -13,6 +13,7 @@ def filename(filepath):
     """
     return path.splitext(path.basename(filepath))[0]
 
+
 def output_results(output, results):
     """
     Outputs gene set enrichment results with their gene counts and p-values

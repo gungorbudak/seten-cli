@@ -27,6 +27,7 @@ def gene_level_score(scores, method='highest'):
     else:
         raise ValueError('could not find %s in available methods' % (method))
 
+
 def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.05):
     """
     Random sample from data and compare the random set
@@ -45,23 +46,28 @@ def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.05):
         pass
     return None
 
+
 def gene_set_p_value(scores, overlap_scores, operator=operator.gt, cutoff=0.05, times=1000):
     """
     Computes a p-value by random sampling from data
     and doing Mann-Whitney U test and median comparison
     """
     # serial execution
-    p_values = [randomize(scores, overlap_scores, operator=operator, cutoff=cutoff) for _ in xrange(times)]
+    p_values = [randomize(scores, overlap_scores, operator=operator,
+                          cutoff=cutoff) for _ in xrange(times)]
     # count the p values
     n = times - p_values.count(None)
     return max(1 - (n / float(times)), 1 / float(times))
+
 
 def functional_p_value(gs_size, ov_size, gc_size, dt_size):
     """
     Does a Fisher's exact test
     """
-    odds_ratio, p_value = stats.fisher_exact([[gs_size, ov_size], [gc_size, dt_size]])
+    odds_ratio, p_value = stats.fisher_exact(
+        [[gs_size, ov_size], [gc_size, dt_size]])
     return p_value
+
 
 def p_values_correction(p_values, alpha=0.05, method='bh'):
     """

@@ -15,6 +15,7 @@ def _path(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='reso
     """
     return path.join(resources_dir, '_'.join([version, dataset, 'mapping.csv']))
 
+
 def _download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
     Downloads mapping of chromosomal locations to HGNC symbols
@@ -43,12 +44,14 @@ def _download(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='
 
     mapping_path = _path(version, dataset, resources_dir)
     with open(mapping_path, 'w') as f:
-        f.write(','.join(['chromosome_name', 'start_position', 'end_position', 'hgnc_symbol']))
+        f.write(
+            ','.join(['chromosome_name', 'start_position', 'end_position', 'hgnc_symbol']))
         f.write('\n')
         for line in request.iter_lines():
             f.write(line.strip())
             f.write('\n')
     return mapping_path
+
 
 def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='resources'):
     """
@@ -65,15 +68,18 @@ def generate(version='grch37', dataset='hsapiens_gene_ensembl', resources_dir='r
             # have we added that chromosome name before?
             if not mapping.has_key(row['chromosome_name']):
                 mapping[row['chromosome_name']] = IntervalTree()
-            mapping[row['chromosome_name']].addi(int(row['start_position']), int(row['end_position']), row['hgnc_symbol'])
+            mapping[row['chromosome_name']].addi(
+                int(row['start_position']), int(row['end_position']), row['hgnc_symbol'])
     return mapping
+
 
 def search(chromosome_name, start_position, end_position, mapping=None):
     """
     Searches for chromosomal locations on the interval tree
     """
     # TODO handle chromosome names better to cover more options
-    chromosome_name = str(chromosome_name).replace('chr', '') if str(chromosome_name).startswith('chr') else str(chromosome_name)
+    chromosome_name = str(chromosome_name).replace('chr', '') if str(
+        chromosome_name).startswith('chr') else str(chromosome_name)
     # fixes the name incorrectly given as M instead of MT
     chromosome_name = 'MT' if chromosome_name == 'M' else chromosome_name
     # TODO better handle this exception

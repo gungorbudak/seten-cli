@@ -7,7 +7,7 @@ REQUIRES = [
     'intervaltree>=2.1.0',
     'numpy>=1.9.2',
     'scipy>=0.7.2'
-    ]
+]
 
 EXCLUDE_FROM_PACKAGES = []
 
@@ -25,6 +25,6 @@ setup(
     entry_points={
         'console_scripts': [
             'seten = seten.cli:main',
-            ]
-        }
-    )
+        ]
+    }
+)
