@@ -6,12 +6,12 @@ Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets
 
 ### Using package manager
 
-    pip install git+https://github.com/gungorbudak/seten.git
+    pip install git+https://github.com/gungorbudak/seten-cli.git
 
 ### From source
 
-    git clone https://github.com/gungorbudak/seten.git
-    cd seten/
+    git clone https://github.com/gungorbudak/seten-cli.git
+    cd seten-cli/
     python setup.py install
 
 ## Usage
