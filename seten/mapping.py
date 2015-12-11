@@ -1,6 +1,6 @@
 """
 This file is part of Seten which is released under the MIT License (MIT).
-See file LICENSE or go to https://github.com/gungorbudak/seten/blob/master/LICENSE
+See file LICENSE or go to https://github.com/gungorbudak/seten-cli/blob/master/LICENSE
 for full license details.
 """
 from os import path, mkdir

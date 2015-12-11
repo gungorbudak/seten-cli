@@ -1,13 +1,13 @@
 """
 This file is part of Seten which is released under the MIT License (MIT).
-See file LICENSE or go to https://github.com/gungorbudak/seten/blob/master/LICENSE
+See file LICENSE or go to https://github.com/gungorbudak/seten-cli/blob/master/LICENSE
 for full license details.
 """
 from os import path, mkdir
 import csv
 
 
-def filename(filepath):
+def get_filename(filepath):
     """
     Obtain filename from the filepath
     """
@@ -25,9 +25,20 @@ def output_results(output, results):
     # any result available
     if results:
         with open(output, 'w') as f:
-            header = results[0].keys()
+            header = [
+                'name',
+                'genes',
+                'overlap_size',
+                'gene_set_size',
+                'percent',
+                'fe_pvalue',
+                'fe_pvalue_corrected',
+                'gse_pvalue',
+                'combined_pvalue'
+            ]
             writer = csv.DictWriter(f, delimiter='\t', fieldnames=header)
             writer.writeheader()
             for result in results:
                 if result:
+                    result['genes'] = ', '.join(result['genes'])
                     writer.writerow(result)

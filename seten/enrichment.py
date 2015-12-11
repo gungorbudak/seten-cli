@@ -1,15 +1,16 @@
 """
 This file is part of Seten which is released under the MIT License (MIT).
-See file LICENSE or go to https://github.com/gungorbudak/seten/blob/master/LICENSE
+See file LICENSE or go to https://github.com/gungorbudak/seten-cli/blob/master/LICENSE
 for full license details.
 """
+import os
 import operator
 from itertools import chain
 from collections import defaultdict
-from seten.statistics import gene_level_score
-from seten.statistics import gene_set_p_value
-from seten.statistics import functional_p_value
-from seten.statistics import p_values_correction
+from seten.statistics import compute_gene_level_score
+from seten.statistics import compute_gse_pvalue
+from seten.statistics import compute_fe_pvalue
+from seten.statistics import correct_and_combine_pvalues
 from seten.mapping import search
 
 
@@ -37,95 +38,73 @@ def collect_scores(path='', mapping=None, index=4, method='highest'):
                     for gene in genes:
                         # cast value as float
                         scores[gene].append(float(cols[index]))
-
-    # compute a gene level score from list of binding scores belonging to the
-    # same gene
-    scores = dict((g, gene_level_score(s, method=method))
+    # compute a gene level score from list of binding scores
+    # belonging to the same gene
+    scores = dict((g, compute_gene_level_score(s, method=method))
                   for g, s in scores.iteritems())
     return scores
 
 
-def collect_gene_sets(path='', resources_dir='resources'):
+def collect_collections(collections_dir='resources/collections'):
     """
-    Collects gene sets as a list
+    Collects collections as a dict
     """
-    gene_sets = []
+    collections = defaultdict(list)
     try:
-        with open(path, 'r') as rows:
-            for row in rows:
-                cols = row.strip().split('\t')
-                gene_sets.append(dict(name=cols[0],
-                                      genes=list(set(cols[2:])),
-                                      size=len(set(cols[2:]))))
+        for collection in os.listdir(collections_dir):
+            # proceed if it's a GMT file
+            if collection.endswith('.gmt'):
+                col_path = os.path.join(collections_dir, collection)
+                # get collection ID from the file name
+                # e.g. c2.cp.{kegg}.v5.0.symbols.gmt
+                col_name = os.path.basename(col_path).split('.')[-5]
+                with open(col_path, 'r') as rows:
+                    for row in rows:
+                        cols = row.strip().split('\t')
+                        collections[col_name].append(dict(
+                                name=cols[0],
+                                genes=list(set(cols[2:])),
+                                size=len(set(cols[2:]))
+                                ))
     except IOError:
-        pass
-    gc_size = len(set(chain.from_iterable(
-        [gene_set['genes'] for gene_set in gene_sets])))
-    return gene_sets, gc_size
+        raise Exception('cannot find collections')
+    # count the number of unique genes in all collections
+    collections_size = len(set(chain.from_iterable(
+        [_set['genes'] for sets in collections.values() for _set in sets]
+        )))
+    return collections, collections_size
 
 
-def gene_set_enrichment(scores, gene_set, operator=operator.gt, cutoff=0.05, count=3):
-    """
-    Applies gene set enrichment on the data
-    """
-    overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
-    if len(overlap) >= count:
-        overlap_scores = [scores[str(g)] for g in overlap]
-        p_value = gene_set_p_value(scores.values(), overlap_scores, operator)
-        # there is no cutoff anymore
-        return dict(name=gene_set['name'],
-                    genes=len(overlap),
-                    size=gene_set['size'],
-                    p_value=p_value)
-    return None
-
-
-def functional_enrichment(genes, gene_set, gc_size, cutoff=0.05, count=3):
-    """
-    Applies functional enrichment on the data
-    """
-    overlap = _overlapping_genes(genes, gene_set['genes'])
-    if len(overlap) >= count:
-        p_value = functional_p_value(
-            len(gene_set['genes']), len(overlap), gc_size, len(genes))
-        return dict(name=gene_set['name'],
-                    genes=len(overlap),
-                    size=gene_set['size'],
-                    p_value=p_value)
-    return None
-
-
-def integrated_enrichment(scores, gene_set, gc_size, operator=operator.gt, cutoff=0.05, count=3):
+def integrated_enrichment(scores, collection, collections_size,
+        operator=operator.gt, cutoff=0.05, count=5):
     """
     Applies integrated enrichment on the data
     """
-    overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
-    if len(overlap) >= count:
-        overlap_scores = [scores[str(g)] for g in overlap]
-        gse_p_value = gene_set_p_value(
-            scores.values(), overlap_scores, operator)
-        fe_p_value = functional_p_value(
-            len(gene_set['genes']), len(overlap), gc_size, len(scores.keys()))
-        return dict(name=gene_set['name'],
-                    genes=len(overlap),
-                    size=gene_set['size'],
-                    gse_p_value=gse_p_value,
-                    fe_p_value=fe_p_value)
-    return None
-
-
-def correct_results(results, alpha=0.05, method='bh'):
-    """
-    Corrects p-values in integrated and functional enrichment
-    """
-    results_cor = []
-    fe_p_values = [result['fe_p_value'] for result in results]
-    reject, fe_p_values_cor = p_values_correction(
-        fe_p_values, alpha=alpha, method=method)
-    for i, result in enumerate(results):
-        result['fe_p_value_corrected'] = fe_p_values_cor[i]
-        result['integrated_p_value'] = 1 - \
-            ((1 - result['gse_p_value']) *
-             (1 - result['fe_p_value_corrected']))
-        results_cor.append(result)
-    return results_cor
+    results = []
+    for gene_set in collection:
+        # obtain overlapping genes between the data and the gene set
+        overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
+        if len(overlap) >= count:
+            # obtain scores of overlapping genes for testing
+            overlap_scores = [scores[str(g)] for g in overlap]
+            # test for gene set enrichment
+            gse_pvalue = compute_gse_pvalue(
+                scores.values(), overlap_scores, operator)
+            # test for functional enrichment
+            fe_pvalue = compute_fe_pvalue(
+                len(overlap), gene_set['size'],
+                len(scores.keys()), collections_size)
+            # add to the results
+            results.append(dict(
+                        name=gene_set['name'],
+                        genes=overlap,
+                        overlap_size=len(overlap),
+                        gene_set_size=gene_set['size'],
+                        percent=(len(overlap)/float(gene_set['size']))*100,
+                        gse_pvalue=gse_pvalue,
+                        fe_pvalue=fe_pvalue
+                        ))
+    # correct for multiple p-values from functional enrichment
+    # and combined corrected functional enrichment p-values
+    # with gene set enrichment p-values
+    return correct_and_combine_pvalues(results)
