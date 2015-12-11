@@ -28,7 +28,8 @@ def compute_gene_level_score(scores, method='highest'):
         raise ValueError('could not find %s in available methods' % (method))
 
 
-def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.05):
+def _randomize(scores, overlap_scores, overlap_median,
+        operator=operator.gt, cutoff=0.05):
     """
     Random sample from data and compare the random set
     with the overlap set and return the p-value if
@@ -36,10 +37,10 @@ def randomize(scores, overlap_scores, operator=operator.gt, cutoff=0.05):
     """
     random_scores = random.sample(scores, len(overlap_scores))
     try:
-        if operator(numpy.median(overlap_scores), numpy.median(random_scores)):
+        if operator(overlap_median, numpy.median(random_scores)):
+            # one-sided Mann Whitney U test for testing if overlap scores
+            # have significantly larger values than random scores
             statistic, pvalue = stats.mannwhitneyu(overlap_scores, random_scores)
-            # two-tailed test fix
-            pvalue *= 2
             if pvalue < cutoff:
                 return pvalue
     except ValueError:
@@ -53,9 +54,10 @@ def compute_gse_pvalue(scores, overlap_scores,
     Computes a p-value by random sampling from data
     and doing Mann-Whitney U test and median comparison
     """
+    overlap_median = numpy.median(overlap_scores)
     # serial execution
-    pvalues = [randomize(scores, overlap_scores, operator=operator,
-                          cutoff=cutoff) for _ in xrange(times)]
+    pvalues = [_randomize(scores, overlap_scores, overlap_median,
+        operator=operator, cutoff=cutoff) for _ in xrange(times)]
     # count the p-values
     n = times - pvalues.count(None)
     return max(1 - (n / float(times)), 1 / float(times))
