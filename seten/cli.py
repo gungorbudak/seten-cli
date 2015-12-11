@@ -33,6 +33,8 @@ def main():
                         help='is the method to compute a gene level score from multiple binding scores for the same gene')
     parser.add_argument(
         '-r', default='gt', help='relates the operator for comparing the median of overlap set and every randomly sampled sets')
+    parser.add_argument('-p', default=4, type=int,
+                        help='is the number of processes to use for analyses')
     args = parser.parse_args()
 
     # collect paths to data files here
@@ -63,14 +65,18 @@ def main():
             data_path, mapping=mapping, index=args.i, method=args.m)
         print '[#]', len(scores.keys()), 'unique genes found in', data_path
 
-        # collect results
+        # start analyses for each collection
         for name, collection in collections.iteritems():
+            # collection timer
+            start_collection_time = time()
+
+            # collect results
             results = integrated_enrichment(
                 scores,
                 collection=collection,
                 collections_size=collections_size,
-                operator=op)
-            print '[#]', len(results), 'gene set enrichment analysis results from', name
+                operator=op,
+                processes=args.p)
 
             # output results
             output = os.path.join(
@@ -79,8 +85,14 @@ def main():
             )
             output_results(output, results)
 
+            # collection timer ends
+            print '[#] Obtained', len(results), \
+                  'gene set enrichment analysis results from', \
+                  name, 'in', round(time() - start_collection_time, 2), 'seconds'
+
     # timer ends
-    print '[#] Took', round(time() - start_time, 2), 'seconds'
+    print '[#] Completed in', round(time() - start_time, 2), 'seconds'
+
 
 if __name__ == '__main__':
     main()

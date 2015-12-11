@@ -5,6 +5,7 @@ for full license details.
 """
 import os
 import operator
+import multiprocessing
 from itertools import chain
 from collections import defaultdict
 from seten.statistics import compute_gene_level_score
@@ -75,35 +76,62 @@ def collect_collections(collections_dir='resources/collections'):
     return collections, collections_size
 
 
+def _enrichment_worker(job):
+    # some local variables for job
+    scores = job['scores']
+    gene_set = job['gene_set']
+    collections_size = job['collections_size']
+    operator = job['operator']
+    cutoff = job['cutoff']
+    count = job['count']
+    # obtain overlapping genes between the data and the gene set
+    overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
+    if len(overlap) >= count:
+        # obtain scores of overlapping genes for testing
+        overlap_scores = [scores[str(g)] for g in overlap]
+        # test for gene set enrichment
+        gse_pvalue = compute_gse_pvalue(
+            scores.values(), overlap_scores, operator)
+        # test for functional enrichment
+        fe_pvalue = compute_fe_pvalue(
+            len(overlap), gene_set['size'],
+            len(scores.keys()), collections_size)
+        # add to the results
+        return dict(
+            name=gene_set['name'],
+            genes=overlap,
+            overlap_size=len(overlap),
+            gene_set_size=gene_set['size'],
+            percent=(len(overlap)/float(gene_set['size']))*100,
+            gse_pvalue=gse_pvalue,
+            fe_pvalue=fe_pvalue
+            )
+    return None
+
+
 def integrated_enrichment(scores, collection, collections_size,
-        operator=operator.gt, cutoff=0.05, count=5):
+        operator=operator.gt, cutoff=0.05, count=5, processes=4):
     """
     Applies integrated enrichment on the data
     """
-    results = []
-    for gene_set in collection:
-        # obtain overlapping genes between the data and the gene set
-        overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
-        if len(overlap) >= count:
-            # obtain scores of overlapping genes for testing
-            overlap_scores = [scores[str(g)] for g in overlap]
-            # test for gene set enrichment
-            gse_pvalue = compute_gse_pvalue(
-                scores.values(), overlap_scores, operator)
-            # test for functional enrichment
-            fe_pvalue = compute_fe_pvalue(
-                len(overlap), gene_set['size'],
-                len(scores.keys()), collections_size)
-            # add to the results
-            results.append(dict(
-                        name=gene_set['name'],
-                        genes=overlap,
-                        overlap_size=len(overlap),
-                        gene_set_size=gene_set['size'],
-                        percent=(len(overlap)/float(gene_set['size']))*100,
-                        gse_pvalue=gse_pvalue,
-                        fe_pvalue=fe_pvalue
-                        ))
+    jobs = [
+        dict(
+            scores = scores,
+            gene_set = gene_set,
+            collections_size = collections_size,
+            operator = operator,
+            cutoff = cutoff,
+            count = count
+            )
+        for gene_set in collection]
+    # limit CPU count to the machines CPU count if a higher count given
+    cpu_count = min(processes, multiprocessing.cpu_count())
+    # pool of processes for parallel execution
+    pool = multiprocessing.Pool(cpu_count)
+    # submit jobs to worker
+    results = pool.map(_enrichment_worker, jobs)
+    # remove None results
+    results = [result for result in results if result != None]
     # correct for multiple p-values from functional enrichment
     # and combined corrected functional enrichment p-values
     # with gene set enrichment p-values
