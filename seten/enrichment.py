@@ -130,6 +130,9 @@ def integrated_enrichment(scores, collection, collections_size,
     pool = multiprocessing.Pool(cpu_count)
     # submit jobs to worker
     results = pool.map(_enrichment_worker, jobs)
+    # close and join
+    pool.close()
+    pool.join()
     # remove None results
     results = [result for result in results if result != None]
     # correct for multiple p-values from functional enrichment
