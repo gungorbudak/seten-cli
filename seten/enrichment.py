@@ -130,7 +130,8 @@ def integrated_enrichment(scores, collection, collections_size,
     pool = multiprocessing.Pool(cpu_count)
     # submit jobs to worker
     results = pool.map(_enrichment_worker, jobs)
-    # close and join
+    # close not to cause high memory use and
+    # join to wait for collecting results
     pool.close()
     pool.join()
     # remove None results

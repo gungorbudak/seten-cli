@@ -15,7 +15,7 @@ setup(
     name='seten',
     version='0.0.1',
     description='Gene set enrichment on CHIP-seq RNA-binding protein binding signals datasets',
-    url='https://bitbucket.org/gungorbudak/seten',
+    url='https://github.com/gungorbudak/seten-cli',
     author='Gungor Budak',
     author_email='gbudak@iupui.edu',
     license='MIT',
