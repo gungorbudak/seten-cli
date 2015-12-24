@@ -26,7 +26,7 @@ Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets. Gi
 ## Usage
 
     seten -h
-    usage: seten [-h] [-c C] [-o O] [-i I] [-m M] [-r R] [-p P] data
+    usage: seten [-h] [-o O] [-i I] [-m M] [-r R] [-p P] data
 
     Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets
 
@@ -35,8 +35,6 @@ Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets. Gi
 
     optional arguments:
       -h, --help  show this help message and exit
-      -c C        is a path to the collections directory that stores GMT formatted
-                  gene collection files (default: resources/collections)
       -o O        is a path to the output directory that stores results (default:
                   output)
       -i I        is the zero-based index of the score column in a BED file

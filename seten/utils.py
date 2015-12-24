@@ -53,4 +53,4 @@ def output_results(output, results):
                         result['gse_pvalue'],
                         result['combined_pvalue']
                     ]
-                    f.write('\t'.join(row) + '\n')
+                    f.write('\t'.join(map(str, row)) + '\n')

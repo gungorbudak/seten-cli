@@ -7,6 +7,7 @@ import os
 import operator
 import argparse
 from time import time
+import seten
 from seten.mapping import generate
 from seten.enrichment import *
 from seten.utils import get_filename, output_results
@@ -23,8 +24,6 @@ def main():
     )
     parser.add_argument(
         'data', help='can be a path to a BED file or a directory of BED files')
-    parser.add_argument('-c', default='resources/collections',
-                        help='is a path to the collections directory that stores GMT formatted gene collection files')
     parser.add_argument('-o', default='output',
                         help='is a path to the output directory that stores results')
     parser.add_argument('-i', default=4, type=int,
@@ -51,11 +50,15 @@ def main():
            'lt': operator.lt}
     op = ops[args.r]
 
+    # resources and collections directories
+    resources_dir = os.path.join(os.path.dirname(seten.__file__), 'resources')
+    collections_dir = os.path.join(resources_dir, 'collections')
+
     # generate the mapping
-    mapping = generate('grch37', 'hsapiens_gene_ensembl', 'resources')
+    mapping = generate('grch37', 'hsapiens_gene_ensembl', resources_dir)
 
     # collect gene sets and collection size
-    collections, collections_size = collect_collections(args.c)
+    collections, collections_size = collect_collections(collections_dir)
     print '[#]', collections_size, 'unique genes found in collections'
 
     # run for each data file
