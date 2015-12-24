@@ -21,12 +21,7 @@ setup(
     license='MIT',
     install_requires=REQUIRES,
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
-    package_data={
-        'seten': [
-            'resources/*'
-            'resources/collections/*'
-            ]
-        },
+    include_package_data=True,
     zip_safe=False,
     entry_points={
         'console_scripts': [
