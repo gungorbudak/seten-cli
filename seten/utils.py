@@ -4,7 +4,6 @@ See file LICENSE or go to https://github.com/gungorbudak/seten-cli/blob/master/L
 for full license details.
 """
 from os import path, mkdir
-import csv
 
 
 def get_filename(filepath):
@@ -25,6 +24,7 @@ def output_results(output, results):
     # any result available
     if results:
         with open(output, 'w') as f:
+            # construct header
             header = [
                 'name',
                 'genes',
@@ -36,9 +36,21 @@ def output_results(output, results):
                 'gse_pvalue',
                 'combined_pvalue'
             ]
-            writer = csv.DictWriter(f, delimiter='\t', fieldnames=header)
-            writer.writeheader()
+            f.write('\t'.join(header) + '\n')
             for result in results:
                 if result:
+                    # convert gene list to comma separated string
                     result['genes'] = ', '.join(result['genes'])
-                    writer.writerow(result)
+                    # construct row same order as header
+                    row = [
+                        result['name'],
+                        result['genes'],
+                        result['overlap_size'],
+                        result['gene_set_size'],
+                        result['percent'],
+                        result['fe_pvalue'],
+                        result['fe_pvalue_corrected'],
+                        result['gse_pvalue'],
+                        result['combined_pvalue']
+                    ]
+                    f.write('\t'.join(row) + '\n')
