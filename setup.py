@@ -24,6 +24,7 @@ setup(
     package_data={
         'seten': [
             'resources/*'
+            'resources/collections/*'
             ]
         },
     zip_safe=False,
