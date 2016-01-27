@@ -109,10 +109,10 @@ def _enrichment_worker(job):
     return None
 
 
-def integrated_enrichment(scores, collection, collections_size,
+def combined_enrichment(scores, collection, collections_size,
         operator=operator.gt, cutoff=0.05, count=5, processes=4):
     """
-    Applies integrated enrichment on the data
+    Applies combined enrichment on the data
     """
     jobs = [
         dict(
@@ -130,9 +130,9 @@ def integrated_enrichment(scores, collection, collections_size,
     pool = multiprocessing.Pool(cpu_count)
     # submit jobs to worker
     results = pool.map(_enrichment_worker, jobs)
-    # close not to cause high memory use and
-    # join to wait for collecting results
+    # close not to cause high memory use
     pool.close()
+    # join to wait for collecting results
     pool.join()
     # remove None results
     results = [result for result in results if result != None]

@@ -28,7 +28,7 @@ def main():
                         help='is a path to the output directory that stores results')
     parser.add_argument('-i', default=4, type=int,
                         help='is the zero-based index of the score column in a BED file')
-    parser.add_argument('-m', default='highest',
+    parser.add_argument('-m', default='max',
                         help='is the method to compute a gene level score from multiple binding scores for the same gene')
     parser.add_argument(
         '-r', default='gt', help='relates the operator for comparing the median of overlap set and every randomly sampled sets')
@@ -74,7 +74,7 @@ def main():
             start_collection_time = time()
 
             # collect results
-            results = integrated_enrichment(
+            results = combined_enrichment(
                 scores,
                 collection=collection,
                 collections_size=collections_size,

@@ -10,15 +10,15 @@ from scipy import stats
 from seten.multi_comp import fdr_correction, bonferroni_correction
 
 
-def compute_gene_level_score(scores, method='highest'):
+def compute_gene_level_score(scores, method='max'):
     """
     Computes a gene level score from list of
     binding scores belonging to the same gene
-    Methods: lowest, highest, mean, median
+    Methods: min, max, mean, median
     """
-    if method == 'lowest':
+    if method == 'min':
         return min(scores)
-    elif method == 'highest':
+    elif method == 'max':
         return max(scores)
     elif method == 'mean':
         return numpy.mean(scores)
@@ -40,7 +40,8 @@ def _randomize(scores, overlap_scores, overlap_median,
         if operator(overlap_median, numpy.median(random_scores)):
             # one-sided Mann Whitney U test for testing if overlap scores
             # have significantly larger values than random scores
-            statistic, pvalue = stats.mannwhitneyu(overlap_scores, random_scores)
+            statistic, pvalue = stats.mannwhitneyu(overlap_scores,
+                random_scores, alternative='greater')
             if pvalue < cutoff:
                 return pvalue
     except ValueError:

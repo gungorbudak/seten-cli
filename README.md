@@ -40,7 +40,7 @@ Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets. Gi
       -i I        is the zero-based index of the score column in a BED file
                   (default: 4)
       -m M        is the method to compute a gene level score from multiple
-                  binding scores for the same gene (default: highest)
+                  binding scores for the same gene (default: max)
       -r R        relates the operator for comparing the median of overlap set and
                   every randomly sampled sets (default: gt)
       -p P        is the number of processes to use for analyses (default: 4)
