@@ -4,6 +4,7 @@ See file LICENSE or go to https://github.com/gungorbudak/seten-cli/blob/master/L
 for full license details.
 """
 from os import path, mkdir
+import seten
 
 
 def get_filename(filepath):
@@ -13,10 +14,21 @@ def get_filename(filepath):
     return path.splitext(path.basename(filepath))[0]
 
 
-def output_results(output, results):
+def get_resources_dir():
+    """
+    Obtain path to resources directory in package directory
+    """
+    return path.join(path.dirname(seten.__file__), 'resources')
+
+
+def output_results(results, data_path, out_dir, coll_id, enr_type, pval_cutoff):
     """
     Outputs gene set enrichment results with their gene counts and p-values
     """
+    output = path.join(
+        out_dir,
+        get_filename(data_path) + '-' + coll_id + '-' + enr_type + '.tsv'
+        )
     # output directory exists?
     if not path.exists(path.dirname(output)):
         mkdir(path.dirname(output))
@@ -30,12 +42,12 @@ def output_results(output, results):
                 'genes',
                 'overlap_size',
                 'gene_set_size',
-                'percent',
-                'fe_pvalue',
-                'fe_pvalue_corrected',
-                'gse_pvalue',
-                'combined_pvalue'
+                'percent'
             ]
+            if enr_type == 'gse':
+                header.append('gse_pvalue')
+            elif enr_type == 'fe':
+                header.extend(['fe_pvalue', 'fe_pvalue_corr'])
             f.write('\t'.join(header) + '\n')
             for result in results:
                 if result:
@@ -48,9 +60,12 @@ def output_results(output, results):
                         result['overlap_size'],
                         result['gene_set_size'],
                         result['percent'],
-                        result['fe_pvalue'],
-                        result['fe_pvalue_corrected'],
-                        result['gse_pvalue'],
-                        result['combined_pvalue']
                     ]
-                    f.write('\t'.join(map(str, row)) + '\n')
+                    if enr_type == 'gse':
+                        row.append(result['gse_pvalue'])
+                        is_significant = result['gse_pvalue'] < pval_cutoff
+                    elif enr_type == 'fe':
+                        row.extend([result['fe_pvalue'], result['fe_pvalue_corr']])
+                        is_significant = result['fe_pvalue_corr'] < pval_cutoff
+                    if is_significant:
+                        f.write('\t'.join(map(str, row)) + '\n')

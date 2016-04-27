@@ -4,10 +4,10 @@ See file LICENSE or go to https://github.com/gungorbudak/seten-cli/blob/master/L
 for full license details.
 """
 import random
-import operator
-import numpy
+import numpy as np
 from scipy import stats
-from seten.multi_comp import fdr_correction, bonferroni_correction
+from seten.multi_comp import fdr_correction
+from seten.multi_comp import bonferroni_correction
 
 
 def compute_gene_level_score(scores, method='max'):
@@ -21,53 +21,41 @@ def compute_gene_level_score(scores, method='max'):
     elif method == 'max':
         return max(scores)
     elif method == 'mean':
-        return numpy.mean(scores)
+        return np.mean(scores)
     elif method == 'median':
-        return numpy.median(scores)
+        return np.median(scores)
     else:
         raise ValueError('could not find %s in available methods' % (method))
 
 
-def _randomize(scores, overlap_scores, overlap_median,
-        operator=operator.gt, cutoff=0.05):
+def _gse_test(scores, overlap_scores):
     """
     Random sample from data and compare the random set
     with the overlap set and return the p-value if
     it meets the conditions
     """
     random_scores = random.sample(scores, len(overlap_scores))
-    try:
-        if operator(overlap_median, numpy.median(random_scores)):
-            # one-sided Mann Whitney U test for testing if overlap scores
-            # have significantly larger values than random scores
-            statistic, pvalue = stats.mannwhitneyu(overlap_scores,
-                random_scores, alternative='greater')
-            if pvalue < cutoff:
-                return pvalue
-    except ValueError:
-        pass
-    return None
+    # one-sided Mann Whitney U test for testing if overlap scores
+    # have significantly larger values than random scores
+    statistic, pvalue = stats.mannwhitneyu(overlap_scores,
+        random_scores, alternative='greater')
+    return pvalue
 
 
-def compute_gse_pvalue(scores, overlap_scores,
-        operator=operator.gt, cutoff=0.05, times=1000):
+def compute_gse_pvalue(scores, overlap_scores, significance_cutoff=0.05, iters=1000):
     """
     Computes a p-value by random sampling from data
     and doing Mann-Whitney U test and median comparison
     """
-    overlap_median = numpy.median(overlap_scores)
-    # serial execution
-    pvalues = [_randomize(scores, overlap_scores, overlap_median,
-        operator=operator, cutoff=cutoff) for _ in xrange(times)]
+    pvalues = [_gse_test(scores, overlap_scores) for _ in xrange(iters)]
     # count the p-values
-    n = times - pvalues.count(None)
-    return max(1 - (n / float(times)), 1 / float(times))
+    n = np.sum(np.array(pvalues, dtype=np.float64) < significance_cutoff)
+    return max(1 - (n / float(iters)), 1 / float(iters))
 
 
 def compute_fe_pvalue(a, b, c, d, method='fishers'):
     """
     Returns p-value for functional enrichment
-    Only tests for over-enrichment
     a: Overlap size
     b: Gene set size
     c: Data size
@@ -81,11 +69,11 @@ def compute_fe_pvalue(a, b, c, d, method='fishers'):
         raise ValueError('could not find %s in available methods' % (method))
 
 
-def _correct_pvalues(pvalues, alpha=0.05, method='bh'):
+def _correct_pvalues(pvalues, alpha=0.05, method='fdr'):
     """
     Correct for multiple p-values
     """
-    if method == 'bh':
+    if method == 'bh' or method == 'fdr':
         return fdr_correction(pvalues, alpha=alpha, method='indep')
     elif method == 'by':
         return fdr_correction(pvalues, alpha=alpha, method='negcorr')
@@ -94,29 +82,15 @@ def _correct_pvalues(pvalues, alpha=0.05, method='bh'):
     raise ValueError('could not find %s in available methods' % (method))
 
 
-def correct_and_combine_pvalues(results,
-        alpha=0.05, correction_method='bh', combination_method='fisher'):
+def correct_pvalues(results, alpha=0.05, method='fdr'):
     """
     Corrects p-values in from functional enrichment
     """
-    results_final = []
-    # raw p-values from functional enrichment results
-    fe_pvalues = [result['fe_pvalue'] for result in results]
+    pvalues = [result['fe_pvalue'] for result in results]
     # correct for p-values
-    reject, fe_pvalues_cor = _correct_pvalues(
-        fe_pvalues, alpha=alpha, method=correction_method
+    reject, pvalues_corr = _correct_pvalues(
+        pvalues, alpha=alpha, method=method
         )
-    # combine corrected funtional enrichment p-values with
-    # gene set enrichment p-values
-    for i, result in enumerate(results):
-        # add corrected pvalue to the results
-        result['fe_pvalue_corrected'] = fe_pvalues_cor[i]
-        # combine the two p-values
-        statistic, combined_pvalue = stats.combine_pvalues([
-            result['gse_pvalue'],
-            result['fe_pvalue_corrected']
-            ], method=combination_method)
-        # add combined pvalue to the results
-        result['combined_pvalue'] = combined_pvalue
-        results_final.append(result)
-    return results_final
+    for i in xrange(len(results)):
+        results[i]['fe_pvalue_corr'] = pvalues_corr[i]
+    return results

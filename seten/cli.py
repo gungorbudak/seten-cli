@@ -4,37 +4,67 @@ See file LICENSE or go to https://github.com/gungorbudak/seten-cli/blob/master/L
 for full license details.
 """
 import os
-import operator
 import argparse
 from time import time
-import seten
 from seten.mapping import generate
-from seten.enrichment import *
-from seten.utils import get_filename, output_results
+from seten.enrichment import collect_collections
+from seten.enrichment import collect_scores
+from seten.enrichment import enrichment_handler
+from seten.utils import output_results
 
 
 def main():
-    # timer starts
-    start_time = time()
-
     # parse terminal arguments
     parser = argparse.ArgumentParser(
         description='Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument(
-        'data', help='can be a path to a BED file or a directory of BED files')
-    parser.add_argument('-o', default='output',
-                        help='is a path to the output directory that stores results')
-    parser.add_argument('-i', default=4, type=int,
-                        help='is the zero-based index of the score column in a BED file')
-    parser.add_argument('-m', default='max',
-                        help='is the method to compute a gene level score from multiple binding scores for the same gene')
-    parser.add_argument(
-        '-r', default='gt', help='relates the operator for comparing the median of overlap set and every randomly sampled sets')
-    parser.add_argument('-p', default=4, type=int,
-                        help='is the number of processes to use for analyses')
+
+    COLLS_CHOICES = ['biocarta', 'kegg', 'reactome', 'gobp', 'gomf', 'gocc', 'hpo', 'malacards']
+    ORG_CHOICES = ['hsa_hg19', 'mmu_mm10', 'rno_rn6', 'dme_bdgp6']
+    MTD_CHOICES = ['min', 'max', 'mean', 'median']
+    ENR_CHOICES = ['gse', 'fe']
+    CORR_CHOICES = ['fdr', 'bh', 'by', 'bon']
+    parser.add_argument('data',
+                        help='path to an input file or a directory of input files, \
+                        input files can be UCSC BED formatted text files, or \
+                        two-column gene - score pairs')
+    parser.add_argument('--colls', default=COLLS_CHOICES, choices=COLLS_CHOICES,
+                        nargs='+', help='gene set collections to do enrichment analysis on')
+    parser.add_argument('--org', default='hsa_hg19', choices=ORG_CHOICES,
+                        help='organism')
+    parser.add_argument('--mtd', default='max', choices=MTD_CHOICES,
+                        help='method to compute a gene level score from multiple binding \
+                        scores for the same gene')
+    parser.add_argument('--enr', default='gse', choices=ENR_CHOICES,
+                        help='enrichment method, gene set enrichment (gse) or \
+                        functional enrichment (fe) using Fisher\'s exact test')
+    parser.add_argument('--pc', default=0.05, type=float, metavar='PVAL',
+                        help='p-value cutoff for significant gene set enrichment \
+                        or corrected functional enrichment results')
+    parser.add_argument('--corr', default='fdr', choices=CORR_CHOICES,
+                        help='correction method after Fisher\'s exact test for \
+                        functional enrichment, Benjamini & Hochberg (fdr or bh), \
+                        Benjamini & Yekutieli (by) and Bonferroni (bon)')
+    parser.add_argument('--gsc', default=350, type=int, metavar='NUM',
+                        help='gene set cutoff, maximum number of genes in \
+                        gene sets in selected gene set collections')
+    parser.add_argument('--oc', default=5, type=int, metavar='NUM',
+                        help='overlap cutoff, minimum number of overlapping genes \
+                        between the dataset and each gene set')
+    parser.add_argument('--sc', default=0.05, type=float, metavar='PVAL',
+                        help='significance cutoff for significant Mann-Whitney U test \
+                        result in gene set enrichment iterations')
+    parser.add_argument('--iter', default=1000, type=int, metavar='NUM',
+                        help='number of iterations for gene set enrichment analysis')
+    parser.add_argument('--proc', default=4, type=int, metavar='NUM',
+                        help='number of processes to use for analyses')
+    parser.add_argument('--out', default='output', metavar='DIR',
+                        help='path to the output directory for storing results')
     args = parser.parse_args()
+
+    # timer starts
+    start_time = time()
 
     # collect paths to data files here
     data_paths = []
@@ -45,53 +75,38 @@ def main():
     else:
         data_paths.append(args.data)
 
-    # relate operators
-    ops = {'gt': operator.gt,
-           'lt': operator.lt}
-    op = ops[args.r]
-
-    # resources and collections directories
-    resources_dir = os.path.join(os.path.dirname(seten.__file__), 'resources')
-    collections_dir = os.path.join(resources_dir, 'collections')
-
-    # generate the mapping
-    mapping = generate('grch37', 'hsapiens_gene_ensembl', resources_dir)
-
     # collect gene sets and collection size
-    collections, collections_size = collect_collections(collections_dir)
-    print '[#]', collections_size, 'unique genes found in collections'
+    colls, colls_size = collect_collections(args.org, args.colls, COLLS_CHOICES)
+    print '[#]', colls_size, 'unique genes found in gene set collections'
+    # generate the mapping
+    mapping = generate(args.org)
 
     # run for each data file
     for data_path in data_paths:
         # collect scores
         scores = collect_scores(
-            data_path, mapping=mapping, index=args.i, method=args.m)
+            data_path, mapping=mapping, method=args.mtd)
         print '[#]', len(scores.keys()), 'unique genes found in', data_path
 
         # start analyses for each collection
-        for name, collection in collections.iteritems():
+        for coll in colls:
             # collection timer
             start_collection_time = time()
 
             # collect results
-            results = combined_enrichment(
-                scores,
-                collection=collection,
-                collections_size=collections_size,
-                operator=op,
-                processes=args.p)
+            results = enrichment_handler(scores, coll, colls_size, gene_set_cutoff=args.gsc,
+                overlap_cutoff=args.oc, significance_cutoff=args.sc, iters=args.iter,
+                corr_method=args.corr, enr_type=args.enr, processes=args.proc)
 
             # output results
-            output = os.path.join(
-                args.o,
-                get_filename(data_path) + '-' + name + '.tsv'
-            )
-            output_results(output, results)
+            output_results(results, data_path, args.out, coll['collectionId'], args.enr, args.pc)
 
             # collection timer ends
-            print '[#] Obtained', len(results), \
-                  'gene set enrichment analysis results from', \
-                  name, 'in', round(time() - start_collection_time, 2), 'seconds'
+            print ' '.join([
+                '[#] Obtained', str(len(results)), args.enr, 'analysis results from',
+                coll['collectionId'], 'in', str(round(time() - start_collection_time, 2)),
+                'seconds'
+            ])
 
     # timer ends
     print '[#] Completed in', round(time() - start_time, 2), 'seconds'
