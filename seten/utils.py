@@ -36,8 +36,10 @@ def output_results(results, data_path, out_dir, coll_id, enr_method, pval_cutoff
     # any result available
     if results:
         with open(output, 'w') as f:
+            c = 0
             # construct header
             header = [
+                'id',
                 'name',
                 'genes',
                 'overlap_size',
@@ -55,6 +57,7 @@ def output_results(results, data_path, out_dir, coll_id, enr_method, pval_cutoff
                     result['genes'] = ', '.join(result['genes'])
                     # construct row same order as header
                     row = [
+                        result['id'],
                         result['name'],
                         result['genes'],
                         result['overlap_size'],
@@ -68,4 +71,11 @@ def output_results(results, data_path, out_dir, coll_id, enr_method, pval_cutoff
                         row.extend([result['fe_pvalue'], result['fe_pvalue_corr']])
                         is_significant = result['fe_pvalue_corr'] < pval_cutoff
                     if is_significant:
+                        c += 1
                         f.write('\t'.join(map(str, row)) + '\n')
+        print ' '.join([
+            '[#] Obtained',
+            str(c), enr_method,
+            'analysis results from',
+            coll_id
+        ])

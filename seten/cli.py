@@ -22,7 +22,7 @@ def main():
 
     COLLS_CHOICES = ['biocarta', 'kegg', 'reactome', 'gobp', 'gomf', 'gocc', 'hpo', 'malacards']
     ORG_CHOICES = ['hsa_hg19', 'mmu_mm10', 'rno_rn6', 'dme_bdgp6']
-    MTD_CHOICES = ['min', 'max', 'mean', 'median', 'sum']
+    SCR_CHOICES = ['min', 'max', 'mean', 'median', 'sum']
     ENR_CHOICES = ['gse', 'fe']
     CORR_CHOICES = ['fdr', 'bh', 'by', 'bon']
     parser.add_argument('data',
@@ -36,14 +36,14 @@ def main():
     parser.add_argument('--enr-mtd', default='gse', choices=ENR_CHOICES,
                         help='enrichment method, gene set enrichment (gse) or \
                         functional enrichment (fe) using Fisher\'s exact test')
-    parser.add_argument('--scr-mtd', default='max', choices=MTD_CHOICES,
+    parser.add_argument('--scr-mtd', default='max', choices=SCR_CHOICES,
                         help='method to compute a gene level score from multiple binding \
                         scores for the same gene')
     parser.add_argument('--corr-mtd', default='fdr', choices=CORR_CHOICES,
                         help='correction method after Fisher\'s exact test for \
                         functional enrichment, Benjamini & Hochberg (fdr or bh), \
                         Benjamini & Yekutieli (by) and Bonferroni (bon)')
-                        parser.add_argument('--pc', default=0.05, type=float, metavar='PVAL',
+    parser.add_argument('--pc', default=0.05, type=float, metavar='PVAL',
                         help='p-value cutoff for significant gene set enrichment \
                         or corrected functional enrichment results')
     parser.add_argument('--gsc', default=350, type=int, metavar='NUM',
@@ -85,7 +85,7 @@ def main():
     for data_path in data_paths:
         # collect scores
         scores = collect_scores(
-            data_path, mapping=mapping, method=args.scr_mtd)
+            data_path, mapping=mapping, scr_method=args.scr_mtd)
         print '[#]', len(scores.keys()), 'unique genes found in', data_path
 
         # start analyses for each collection
@@ -96,20 +96,20 @@ def main():
             # collect results
             results = enrichment_handler(scores, coll, colls_size, gene_set_cutoff=args.gsc,
                 overlap_cutoff=args.oc, significance_cutoff=args.sc, iters=args.iter,
-                corr_method=args.corr_mtd, enr_type=args.enr_mtd, processes=args.proc)
+                corr_method=args.corr_mtd, enr_method=args.enr_mtd, processes=args.proc)
 
             # output results
             output_results(results, data_path, args.out, coll['collectionId'], args.enr_mtd, args.pc)
 
             # collection timer ends
             print ' '.join([
-                '[#] Obtained', str(len(results)), args.enr_mtd, 'analysis results from',
-                coll['collectionId'], 'in', str(round(time() - start_collection_time, 2)),
+                '[#] Completed in',
+                str(round(time() - start_collection_time, 2)),
                 'seconds'
             ])
 
     # timer ends
-    print '[#] Completed in', round(time() - start_time, 2), 'seconds'
+    print '[#] Took', round(time() - start_time, 2), 'seconds in total'
 
 
 if __name__ == '__main__':

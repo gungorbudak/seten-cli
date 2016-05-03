@@ -17,7 +17,7 @@ from seten.mapping import search
 from seten.utils import get_resources_dir
 
 
-def collect_scores(path, mapping, method='max', index=4):
+def collect_scores(path, mapping, scr_method='max', index=4):
     """
     Collect scores from a BED or two-column gene - score file
     """
@@ -42,7 +42,7 @@ def collect_scores(path, mapping, method='max', index=4):
                             scores[gene].append(float(cols[index]))
     # compute a gene level score from list of binding scores
     # belonging to the same gene
-    scores = dict((g, compute_gene_level_score(s, method=method))
+    scores = dict((g, compute_gene_level_score(s, method=scr_method))
                   for g, s in scores.iteritems())
     return scores
 
@@ -59,7 +59,6 @@ def collect_collections(organism, given_colls, all_colls):
         coll_path = os.path.join(colls_dir, coll + '.json')
         if os.path.exists(coll_path):
             with open(coll_path, 'r') as f: _coll = json.load(f)
-            print coll, len(_coll['geneSets'])
             genes.extend([gene_set['genes'] for gene_set in _coll['geneSets']])
             if coll in given_colls:
                 colls.append(_coll)
@@ -85,6 +84,7 @@ def _functional_enrichment(scores, gene_sets, colls_size, gene_set_cutoff=350):
                 len(overlap), gene_set['size'],
                 len(scores.keys()), colls_size)
             results.append(dict(
+                id = gene_set['id'],
                 name=gene_set['name'],
                 genes=overlap,
                 overlap_size=len(overlap),
@@ -112,6 +112,7 @@ def _gene_set_enrichment(job):
         gse_pvalue = compute_gse_pvalue(scores.values(), overlap_scores, sign_cutoff, iters)
         # add to the results
         return dict(
+            id = gene_set['id'],
             name=gene_set['name'],
             genes=overlap,
             overlap_size=len(overlap),

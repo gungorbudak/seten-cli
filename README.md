@@ -33,9 +33,9 @@ If you don't have superuser rights to install Seten, you can add `--user` to ins
     usage: seten [-h]
                  [--colls {biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} [{biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} ...]]
                  [--org {hsa_hg19,mmu_mm10,rno_rn6,dme_bdgp6}]
-                 [--mtd {min,max,mean,median}] [--enr {gse,fe}] [--pc PVAL]
-                 [--corr {fdr,bh,by,bon}] [--gsc NUM] [--oc NUM] [--sc PVAL]
-                 [--iter NUM] [--proc NUM] [--out DIR]
+                 [--enr-mtd {gse,fe}] [--scr-mtd {min,max,mean,median,sum}]
+                 [--corr-mtd {fdr,bh,by,bon}] [--pc PVAL] [--gsc NUM] [--oc NUM]
+                 [--sc PVAL] [--iter NUM] [--proc NUM] [--out DIR]
                  data
 
     Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets
@@ -53,20 +53,20 @@ If you don't have superuser rights to install Seten, you can add `--user` to ins
                             'gomf', 'gocc', 'hpo', 'malacards'])
       --org {hsa_hg19,mmu_mm10,rno_rn6,dme_bdgp6}
                             organism (default: hsa_hg19)
-      --mtd {min,max,mean,median}
-                            method to compute a gene level score from multiple
-                            binding scores for the same gene (default: max)
-      --enr {gse,fe}        enrichment method, gene set enrichment (gse) or
+      --enr-mtd {gse,fe}    enrichment method, gene set enrichment (gse) or
                             functional enrichment (fe) using Fisher's exact test
                             (default: gse)
-      --pc PVAL             p-value cutoff for significant gene set enrichment or
-                            corrected functional enrichment results (default:
-                            0.05)
-      --corr {fdr,bh,by,bon}
+      --scr-mtd {min,max,mean,median,sum}
+                            method to compute a gene level score from multiple
+                            binding scores for the same gene (default: max)
+      --corr-mtd {fdr,bh,by,bon}
                             correction method after Fisher's exact test for
                             functional enrichment, Benjamini & Hochberg (fdr or
                             bh), Benjamini & Yekutieli (by) and Bonferroni (bon)
                             (default: fdr)
+      --pc PVAL             p-value cutoff for significant gene set enrichment or
+                            corrected functional enrichment results (default:
+                            0.05)
       --gsc NUM             gene set cutoff, maximum number of genes in gene sets
                             in selected gene set collections (default: 350)
       --oc NUM              overlap cutoff, minimum number of overlapping genes
@@ -78,6 +78,7 @@ If you don't have superuser rights to install Seten, you can add `--user` to ins
                             (default: 1000)
       --proc NUM            number of processes to use for analyses (default: 4)
       --out DIR             path to the output directory for storing results
+                            (default: output)
 
 ## Disclamer about the collections
 
