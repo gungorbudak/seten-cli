@@ -21,13 +21,13 @@ def get_resources_dir():
     return path.join(path.dirname(seten.__file__), 'resources')
 
 
-def output_results(results, data_path, out_dir, coll_id, enr_type, pval_cutoff):
+def output_results(results, data_path, out_dir, coll_id, enr_method, pval_cutoff):
     """
     Outputs gene set enrichment results with their gene counts and p-values
     """
     output = path.join(
         out_dir,
-        get_filename(data_path) + '-' + coll_id + '-' + enr_type + '.tsv'
+        get_filename(data_path) + '-' + coll_id + '-' + enr_method + '.tsv'
         )
     # output directory exists?
     if not path.exists(path.dirname(output)):
@@ -44,9 +44,9 @@ def output_results(results, data_path, out_dir, coll_id, enr_type, pval_cutoff):
                 'gene_set_size',
                 'percent'
             ]
-            if enr_type == 'gse':
+            if enr_method == 'gse':
                 header.append('gse_pvalue')
-            elif enr_type == 'fe':
+            elif enr_method == 'fe':
                 header.extend(['fe_pvalue', 'fe_pvalue_corr'])
             f.write('\t'.join(header) + '\n')
             for result in results:
@@ -61,10 +61,10 @@ def output_results(results, data_path, out_dir, coll_id, enr_type, pval_cutoff):
                         result['gene_set_size'],
                         result['percent'],
                     ]
-                    if enr_type == 'gse':
+                    if enr_method == 'gse':
                         row.append(result['gse_pvalue'])
                         is_significant = result['gse_pvalue'] < pval_cutoff
-                    elif enr_type == 'fe':
+                    elif enr_method == 'fe':
                         row.extend([result['fe_pvalue'], result['fe_pvalue_corr']])
                         is_significant = result['fe_pvalue_corr'] < pval_cutoff
                     if is_significant:

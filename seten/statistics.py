@@ -24,6 +24,8 @@ def compute_gene_level_score(scores, method='max'):
         return np.mean(scores)
     elif method == 'median':
         return np.median(scores)
+    elif method == 'sum':
+        return np.sum(scores)
     else:
         raise ValueError('could not find %s in available methods' % (method))
 
@@ -35,10 +37,9 @@ def _gse_test(scores, overlap_scores):
     it meets the conditions
     """
     random_scores = random.sample(scores, len(overlap_scores))
-    # one-sided Mann Whitney U test for testing if overlap scores
+    # Mann Whitney U test for testing if overlap scores
     # have significantly larger values than random scores
-    statistic, pvalue = stats.mannwhitneyu(overlap_scores,
-        random_scores, alternative='greater')
+    statistic, pvalue = stats.mannwhitneyu(overlap_scores, random_scores)
     return pvalue
 
 
@@ -62,8 +63,7 @@ def compute_fe_pvalue(a, b, c, d, method='fishers'):
     d: Collections size
     """
     if method == 'fishers':
-        odds_ratio, pvalue = stats.fisher_exact(
-            [[a, b], [c-a, d-b]], alternative='greater')
+        odds_ratio, pvalue = stats.fisher_exact([[a, b], [c-a, d-b]])
         return pvalue
     else:
         raise ValueError('could not find %s in available methods' % (method))

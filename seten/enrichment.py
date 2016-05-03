@@ -124,11 +124,11 @@ def _gene_set_enrichment(job):
 
 def enrichment_handler(scores, collection, collections_size, gene_set_cutoff=350,
         overlap_cutoff=5, significance_cutoff=0.05, iters=1000, corr_method='fdr',
-        enr_type='gse', processes=4):
+        enr_method='gse', processes=4):
     """
     Applies gene set enrichment or functional enrichment on the data
     """
-    if enr_type == 'gse':
+    if enr_method == 'gse':
         jobs = [
             dict(
                 scores = scores,
@@ -151,7 +151,7 @@ def enrichment_handler(scores, collection, collections_size, gene_set_cutoff=350
         pool.join()
         # remove None results
         results = [result for result in results if result != None]
-    elif enr_type == 'fe':
+    elif enr_method == 'fe':
         results = _functional_enrichment(scores, collection['geneSets'],
             collections_size, gene_set_cutoff)
         results = correct_pvalues(results, method=corr_method)
