@@ -39,7 +39,11 @@ def _gse_test(scores, overlap_scores):
     random_scores = random.sample(scores, len(overlap_scores))
     # Mann Whitney U test for testing if overlap scores
     # have significantly larger values than random scores
-    statistic, pvalue = stats.mannwhitneyu(overlap_scores, random_scores)
+    try:
+        statistic, pvalue = stats.mannwhitneyu(overlap_scores, random_scores)
+    except ValueError:
+        # if all the values are identical, just return 1 as pvalue
+        return 1
     return pvalue
 
 
