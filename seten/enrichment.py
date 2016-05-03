@@ -74,11 +74,40 @@ def _overlapping_genes(genes, gs_genes):
     return list(set.intersection(set(genes), gs_genes))
 
 
-def _functional_enrichment(scores, gene_sets, colls_size, gene_set_cutoff=350):
+def _gene_set_enrichment(job):
+    # some local variables for job
+    scores = job['scores']
+    gene_set = job['gene_set']
+    overlap_cutoff = job['overlap_cutoff']
+    sign_cutoff = job['significance_cutoff']
+    iters = job['iters']
+    # obtain overlapping genes between the data and the gene set
+    overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
+    if overlap_cutoff <= len(overlap):
+        # obtain scores of overlapping genes for testing
+        overlap_scores = [scores[str(g)] for g in overlap]
+        # test for gene set enrichment
+        gse_pvalue = compute_gse_pvalue(scores.values(),
+            overlap_scores, sign_cutoff, iters)
+        # add to the results
+        return dict(
+            id = gene_set['id'],
+            name=gene_set['name'],
+            genes=overlap,
+            overlap_size=len(overlap),
+            gene_set_size=gene_set['size'],
+            percent=(len(overlap)/float(gene_set['size']))*100,
+            gse_pvalue=gse_pvalue
+            )
+    return None
+
+
+def _functional_enrichment(scores, gene_sets, colls_size,
+        gene_set_cutoff=350, overlap_cutoff=5):
     results = []
     for gene_set in gene_sets:
-        if 0 < gene_set['size'] <= gene_set_cutoff:
-            overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
+        overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
+        if overlap_cutoff <= len(overlap) <= gene_set['size'] <= gene_set_cutoff:
             # test for functional enrichment
             fe_pvalue = compute_fe_pvalue(
                 len(overlap), gene_set['size'],
@@ -95,34 +124,6 @@ def _functional_enrichment(scores, gene_sets, colls_size, gene_set_cutoff=350):
     return results
 
 
-def _gene_set_enrichment(job):
-    # some local variables for job
-    scores = job['scores']
-    gene_set = job['gene_set']
-    colls_size = job['collections_size']
-    overlap_cutoff = job['overlap_cutoff']
-    sign_cutoff = job['significance_cutoff']
-    iters = job['iters']
-    # obtain overlapping genes between the data and the gene set
-    overlap = _overlapping_genes(scores.keys(), gene_set['genes'])
-    if len(overlap) >= overlap_cutoff:
-        # obtain scores of overlapping genes for testing
-        overlap_scores = [scores[str(g)] for g in overlap]
-        # test for gene set enrichment
-        gse_pvalue = compute_gse_pvalue(scores.values(), overlap_scores, sign_cutoff, iters)
-        # add to the results
-        return dict(
-            id = gene_set['id'],
-            name=gene_set['name'],
-            genes=overlap,
-            overlap_size=len(overlap),
-            gene_set_size=gene_set['size'],
-            percent=(len(overlap)/float(gene_set['size']))*100,
-            gse_pvalue=gse_pvalue
-            )
-    return None
-
-
 def enrichment_handler(scores, collection, collections_size, gene_set_cutoff=350,
         overlap_cutoff=5, significance_cutoff=0.05, iters=1000, corr_method='fdr',
         enr_method='gse', processes=4):
@@ -134,12 +135,13 @@ def enrichment_handler(scores, collection, collections_size, gene_set_cutoff=350
             dict(
                 scores = scores,
                 gene_set = gene_set,
-                collections_size = collections_size,
                 overlap_cutoff = overlap_cutoff,
                 significance_cutoff = significance_cutoff,
                 iters = iters
                 )
-            for gene_set in collection['geneSets'] if gene_set['size'] <= gene_set_cutoff]
+            for gene_set in collection['geneSets']
+            if gene_set['size'] <= gene_set_cutoff
+            ]
         # limit CPU count to the machines CPU count if a higher count given
         cpu_count = min(processes, multiprocessing.cpu_count())
         # pool of processes for parallel execution
@@ -154,6 +156,6 @@ def enrichment_handler(scores, collection, collections_size, gene_set_cutoff=350
         results = [result for result in results if result != None]
     elif enr_method == 'fe':
         results = _functional_enrichment(scores, collection['geneSets'],
-            collections_size, gene_set_cutoff)
+            collections_size, gene_set_cutoff, overlap_cutoff)
         results = correct_pvalues(results, method=corr_method)
     return results

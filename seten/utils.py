@@ -66,13 +66,14 @@ def output_results(results, data_path, out_dir, coll_id, enr_method, pval_cutoff
                     ]
                     if enr_method == 'gse':
                         row.append(result['gse_pvalue'])
-                        is_significant = result['gse_pvalue'] < pval_cutoff
+                        is_significant = result['gse_pvalue'] <= pval_cutoff
                     elif enr_method == 'fe':
                         row.extend([result['fe_pvalue'], result['fe_pvalue_corr']])
-                        is_significant = result['fe_pvalue_corr'] < pval_cutoff
+                        is_significant = result['fe_pvalue_corr'] <= pval_cutoff
                     if is_significant:
                         c += 1
                         f.write('\t'.join(map(str, row)) + '\n')
+                        
         print ' '.join([
             '[#] Obtained',
             str(c), enr_method,

@@ -47,7 +47,8 @@ def _gse_test(scores, overlap_scores):
     return pvalue
 
 
-def compute_gse_pvalue(scores, overlap_scores, significance_cutoff=0.05, iters=1000):
+def compute_gse_pvalue(scores, overlap_scores,
+        significance_cutoff=0.05, iters=1000):
     """
     Computes a p-value by random sampling from data
     and doing Mann-Whitney U test and median comparison
