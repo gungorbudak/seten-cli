@@ -17,33 +17,67 @@ Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets. Gi
 
     pip install git+https://github.com/gungorbudak/seten-cli.git
 
-### From source
+### Using source code
 
     git clone https://github.com/gungorbudak/seten-cli.git
     cd seten-cli/
     python setup.py install
 
+### Locally
+
+If you don't have superuser rights to install Seten, you can add `--user` to installation commands to make it available locally. In this case, depending on your system you might have to add the local binaries directory to the PATH environment variable (e.g. `/home/user/.local/bin` in Linux).
+
 ## Usage
 
-    seten -h
-    usage: seten [-h] [-o O] [-i I] [-m M] [-r R] [-p P] data
+    $ seten -h
+    usage: seten [-h]
+                 [--colls {biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} [{biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} ...]]
+                 [--org {hsa_hg19,mmu_mm10,rno_rn6,dme_bdgp6}]
+                 [--mtd {min,max,mean,median}] [--enr {gse,fe}] [--pc PVAL]
+                 [--corr {fdr,bh,by,bon}] [--gsc NUM] [--oc NUM] [--sc PVAL]
+                 [--iter NUM] [--proc NUM] [--out DIR]
+                 data
 
     Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets
 
     positional arguments:
-      data        can be a path to a BED file or a directory of BED files
+      data                  path to an input file or a directory of input files,
+                            input files can be UCSC BED formatted text files, or
+                            two-column gene - score pairs
 
     optional arguments:
-      -h, --help  show this help message and exit
-      -o O        is a path to the output directory that stores results (default:
-                  output)
-      -i I        is the zero-based index of the score column in a BED file
-                  (default: 4)
-      -m M        is the method to compute a gene level score from multiple
-                  binding scores for the same gene (default: max)
-      -r R        relates the operator for comparing the median of overlap set and
-                  every randomly sampled sets (default: gt)
-      -p P        is the number of processes to use for analyses (default: 4)
+      -h, --help            show this help message and exit
+      --colls {biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} [{biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} ...]
+                            gene set collections to do enrichment analysis on
+                            (default: ['biocarta', 'kegg', 'reactome', 'gobp',
+                            'gomf', 'gocc', 'hpo', 'malacards'])
+      --org {hsa_hg19,mmu_mm10,rno_rn6,dme_bdgp6}
+                            organism (default: hsa_hg19)
+      --mtd {min,max,mean,median}
+                            method to compute a gene level score from multiple
+                            binding scores for the same gene (default: max)
+      --enr {gse,fe}        enrichment method, gene set enrichment (gse) or
+                            functional enrichment (fe) using Fisher's exact test
+                            (default: gse)
+      --pc PVAL             p-value cutoff for significant gene set enrichment or
+                            corrected functional enrichment results (default:
+                            0.05)
+      --corr {fdr,bh,by,bon}
+                            correction method after Fisher's exact test for
+                            functional enrichment, Benjamini & Hochberg (fdr or
+                            bh), Benjamini & Yekutieli (by) and Bonferroni (bon)
+                            (default: fdr)
+      --gsc NUM             gene set cutoff, maximum number of genes in gene sets
+                            in selected gene set collections (default: 350)
+      --oc NUM              overlap cutoff, minimum number of overlapping genes
+                            between the dataset and each gene set (default: 5)
+      --sc PVAL             significance cutoff for significant Mann-Whitney U
+                            test result in gene set enrichment iterations
+                            (default: 0.05)
+      --iter NUM            number of iterations for gene set enrichment analysis
+                            (default: 1000)
+      --proc NUM            number of processes to use for analyses (default: 4)
+      --out DIR             path to the output directory for storing results
 
 ## Disclamer about the collections
 
