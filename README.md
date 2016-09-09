@@ -24,7 +24,7 @@ Supports following gene set collections for the above organisms:
 
 \* Only available for human and mouse \** Only available for human
 
-If the organism or gene set collection of your interest is not listed here, you can extend Seten for them. Please go to [the guide for extending Seten to new organisms and/or gene set collections](#extending-to-new-organisms-and-or-gene-set-collections).
+If the organism or gene set collection of your interest is not listed here, you can extend Seten for them. Please go to [the guide for extending Seten to new organisms and/or gene set collections](#extending-to-new-organisms-andor-gene-set-collections).
 
 ## Installation
 
