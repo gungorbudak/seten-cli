@@ -1,15 +1,30 @@
 # Seten (command line interface)
 
-Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets. Given a peak called BED file, Seten will result in gene set enrichment analysis results for following gene collections:
+Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets. Given a peak-detected BED file or a two-column gene - score file, Seten does a gene set enrichment analysis.
 
-* Pathways: REACTOME
-* Pathways: BIOCARTA
+Supports following organisms:
+
+* Fruit fly (dme6 build)
+* Human (hg19 build and hg38 build)
+* Mouse (mm10 build)
+* Rat (rn6 build)
+* Worm (cel235 build)
+* Yeast (r64-1-1 build)
+
+Supports following gene set collections for the above organisms:
+
+* Pathways: BIOCARTA*
 * Pathways: KEGG
+* Pathways: REACTOME
 * GO: Biological Process
 * GO: Molecular Function
 * GO: Cellular Compartment
-* Human Phenotype Ontology
-* MalaCards Disease Ontology
+* Human Phenotype Ontology**
+* MalaCards Disease Ontology**
+
+\* Only available for human and mouse \** Only available for human
+
+If the organism or gene set collection of your interest is not listed here, you can extend Seten for them. Please go to [the guide for extending Seten to new organisms and/or gene set collections](#extending-to-new-organisms-and-or-gene-set-collections).
 
 ## Installation
 
@@ -25,61 +40,24 @@ Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets. Gi
 
 ### Locally
 
-If you don't have superuser rights to install Seten, you can add `--user` to installation commands to make it available locally. In this case, depending on your system you might have to add the local binaries directory to the PATH environment variable (e.g. `/home/user/.local/bin` in Linux).
+If you don't have superuser rights to install Seten, you can add `--user` to the either installation command to make it available locally. In this case, depending on your system you might have to add the local binaries directory to the PATH environment variable (e.g. `/home/user/.local/bin` in Linux).
 
 ## Usage
 
+Use below command and it option to get usage of Seten.
+
     $ seten -h
-    usage: seten [-h]
-                 [--colls {biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} [{biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} ...]]
-                 [--org {hsa_hg19,mmu_mm10,rno_rn6,dme_bdgp6}]
-                 [--enr-mtd {gse,fe}] [--scr-mtd {min,max,mean,median,sum}]
-                 [--corr-mtd {fdr,bh,by,bon}] [--pc PVAL] [--gsc NUM] [--oc NUM]
-                 [--sc PVAL] [--iter NUM] [--proc NUM] [--out DIR]
-                 data
 
-    Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets
+### Extending to new organisms and/or gene set collections
 
-    positional arguments:
-      data                  path to an input file or a directory of input files,
-                            input files can be UCSC BED formatted text files, or
-                            two-column gene - score pairs
+#### Generating a mapping file for an organism
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --colls {biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} [{biocarta,kegg,reactome,gobp,gomf,gocc,hpo,malacards} ...]
-                            gene set collections to do enrichment analysis on
-                            (default: ['biocarta', 'kegg', 'reactome', 'gobp',
-                            'gomf', 'gocc', 'hpo', 'malacards'])
-      --org {hsa_hg19,mmu_mm10,rno_rn6,dme_bdgp6}
-                            organism (default: hsa_hg19)
-      --enr-mtd {gse,fe}    enrichment method, gene set enrichment (gse) or
-                            functional enrichment (fe) using Fisher's exact test
-                            (default: gse)
-      --scr-mtd {min,max,mean,median,sum}
-                            method to compute a gene level score from multiple
-                            binding scores for the same gene (default: max)
-      --corr-mtd {fdr,bh,by,bon}
-                            correction method after Fisher's exact test for
-                            functional enrichment, Benjamini & Hochberg (fdr or
-                            bh), Benjamini & Yekutieli (by) and Bonferroni (bon)
-                            (default: fdr)
-      --pc PVAL             p-value cutoff for significant gene set enrichment or
-                            corrected functional enrichment results (default:
-                            0.05)
-      --gsc NUM             gene set cutoff, maximum number of genes in gene sets
-                            in selected gene set collections (default: 350)
-      --oc NUM              overlap cutoff, minimum number of overlapping genes
-                            between the dataset and each gene set (default: 5)
-      --sc PVAL             significance cutoff for significant Mann-Whitney U
-                            test result in gene set enrichment iterations
-                            (default: 0.05)
-      --iter NUM            number of iterations for gene set enrichment analysis
-                            (default: 1000)
-      --proc NUM            number of processes to use for analyses (default: 4)
-      --out DIR             path to the output directory for storing results
-                            (default: output)
+A mapping file is a Tab-separated table including columns chromosome name, gene start position, gene end position and corresponding gene name for all genes available for that organism. Such a table might be obtained from Ensembl BioMart. Please make sure for genes, you select gene name field for corresponding organism (i.e. HGNC symbols for human) and do not include header row in the tables.
+
+#### Generating a gene set collection file (in GMT format)
+
+GMT (Gene Matrix Transposed) format is a tab delimited file format that describes gene sets in a gene set collection. In the GMT format, each row represents a gene set; in the GMX format, each column represents a gene set. Go to [Broad Institute's official page for organizing a gene set collection in GMT format](http://www.broadinstitute.org/cancer/software/gsea/wiki/index.php/Data_formats#GMT:_Gene_Matrix_Transposed_file_format_.28.2A.gmt.29). Please make sure you are using correct identifier for the genes which should be corresponding given gene names. For example, if you are generating a gene set collection file for fruit fly, the correct gene identifier should be FlyBase gene name.
 
 ## Disclamer about the collections
 
-REACTOME, BIOCARTA, KEGG, GO biological process, GO molecular function and GO cellular compartment collections have been obtained from Broad Institute's Molecular Signature Database version 5.0 (Subramanian, Tamayo, et al. 2005). Human phenotype ontology has been obtained from The Human Phenotype Ontology project  (Köhler et al. 2014). MalaCards disease ontology has been obtained from MalaCards: The human disease database (Rappaport et al. 2014). The use of these collections are for academic purpose and for the use of any purposes the developers and maintainers of the collections should be contacted.
+The use of gene set collections are for academic purpose and for the use of any purposes the developers and maintainers of the collections should be contacted.
