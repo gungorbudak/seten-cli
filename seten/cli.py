@@ -62,7 +62,7 @@ def main():
         help='GMT-formatted gene set collection file \
               to do enrichment analysis on'
     )
-    org_group = parser.add_mutually_exclusive_group(required=True)
+    org_group = parser.add_mutually_exclusive_group()
     org_group.add_argument(
         '--org',
         metavar='ORG',
