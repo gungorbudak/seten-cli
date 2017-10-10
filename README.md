@@ -44,7 +44,7 @@ If you don't have superuser rights to install Seten, you can add `--user` to the
 
 ## Usage
 
-Use below command and it option to get usage of Seten.
+Use below command and its help option (`-h`or `--help`) to get usage of Seten.
 
     $ seten -h
 

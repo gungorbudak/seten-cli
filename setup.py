@@ -15,7 +15,7 @@ EXCLUDE_FROM_PACKAGES = []
 
 setup(
     name='seten',
-    version='0.0.2',
+    version='0.0.3',
     description='Gene set enrichment on CLIP-seq RNA-binding protein binding signals datasets',
     url='https://github.com/gungorbudak/seten-cli',
     author='Gungor Budak',
